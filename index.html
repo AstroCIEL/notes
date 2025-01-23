@@ -7,6 +7,12 @@
   <meta name="description" content="Description">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  <style>
+    .custom-img {
+      width: 500px;
+      height: auto; /* 保持宽高比 */
+    }
+  </style>
 </head>
 <body>
   <div id="app"></div>
@@ -17,6 +23,18 @@
       loadSidebar: true, // 增加：自动加载侧边栏
       subMaxLevel: 3, // 增加：设置最大目录层级
       loadNavbar: true, // 加载导航栏
+      plugins: [
+        function(hook, vm) {
+          hook.doneEach(function() {
+            // 选择所有图片并设置尺寸
+            var images = document.querySelectorAll('.markdown-section img');
+            images.forEach(function(img) {
+              img.style.width = '600px';
+              img.style.height = 'auto';
+            });
+          });
+        }
+      ]
     }
   </script>
   <!-- Docsify v4 -->

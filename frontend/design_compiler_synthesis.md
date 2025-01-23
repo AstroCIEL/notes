@@ -1,6 +1,6 @@
 # Synthesis using Design Compiler
 
-徐若航
+2025.1.23
 
 ## 概述
 

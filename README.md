@@ -1,3 +1,5 @@
-# Headline
+# 数字ic流程学习笔记
 
-> An awesome project.
+> Since 2025.1.23
+
+> Author: Xuruohang
