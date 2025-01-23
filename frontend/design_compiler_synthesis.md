@@ -132,7 +132,7 @@ uniquify ;# Each instance gets a unique design name
   ![wire load](image-10.png)
 
   ```tcl
-  set _wire_load_model -name "10*10" -library my_lib.db
+  set_wire_load_model -name "10*10" -library my_lib.db
   set_wire_load_model -name "10*10" my_lib.db 
   current_design LOW
   set_wire_load_model  -name "10*10" 
@@ -219,11 +219,11 @@ uniquify ;# Each instance gets a unique design name
 
   ```tcl
   # Port: late riser.
-  set max transition 2.0 late riser 
+  set_max_transition 2.0 late riser 
   # Design: TEST
-  set max transition 2.0 TEST 
+  set_max_transition 2.0 TEST 
   # Clock Path: clk
-  set max transition 2.0 [get_clocks clk1] 
+  set_max_transition 2.0 [get_clocks clk1] 
   # Data Path: clk1
   set_max_transition 2.0 -datapath [get_clocks clk1]
   ```

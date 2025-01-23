@@ -7,6 +7,7 @@
   <meta name="description" content="Description">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk/dist/gitalk.css">
   <style>
     .custom-img {
       width: 500px;
@@ -34,10 +35,36 @@
             });
           });
         }
-      ]
+      ],
+      copyCode: {
+        buttonText: 'Copy to clipboard',
+        errorText: 'Error',
+        successText: 'Copied',
+      },
+      //disqus: 'shortname', // 增加：Disqus评论插件
     }
   </script>
   <!-- Docsify v4 -->
   <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+  <!-- Latest v3.x.x -->
+  <script src="https://unpkg.com/docsify-copy-code@3"></script>
+  <!-- 增加：代码高亮 -->
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-tcl.min.js"></script>
+  <!-- 增加：Disqus评论插件 -->
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/disqus.min.js"></script>
+
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/gitalk.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js"></script>
+  <script>
+    const gitalk = new Gitalk({
+      clientID: 'Ov23ct4PzD4gi4EcXLW9',
+      clientSecret: '90a3ffc2ea8390a2a4ac451946d4bf2ae386b348',
+      repo: 'https://github.com/AstroCIEL/notes/',
+      owner: 'AstroCIEL',
+      admin: ['AstroCIEL'],
+      // facebook-like distraction free mode
+      distractionFreeMode: false
+    })
+  </script>
 </body>
 </html>
