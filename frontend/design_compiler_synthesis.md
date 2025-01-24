@@ -9,8 +9,9 @@
 逻辑综合分为三个阶段：
 
 - 转译（Translation）：把电路转换为EDA内部数据库(GTECH)，这个数据库跟工艺库是独立无关的；
-- 优化（Optimozation）：根据工作频率、面积、功耗来对电路优化，来推断出满足设计指标要求(sdc约束)的门级网表；
-- 映射（Mapping）：将门级网表映射到晶圆厂给定的工艺库上，最终形成该工艺库对应的门级网表。
+- 链接（Linking）：link是介于Translate和Compile之间的一个小的步骤，主要目的在于解决设计中所有的reference。设计中的所有instances必须要找到它们自己的定义。这些instances可以分为三类：已经Translate的GTECH网表、stdcell、macros（RAM、ROM、IP、etc）
+- 优化（Optimization）：根据工作频率、面积、功耗来对电路优化，来推断出满足设计指标要求(sdc约束)的门级网表；
+- 映射（Mapping）：将门级网表映射到晶圆厂给定的工艺库上，最终形成该工艺库对应的门级网表。优化和映射可以合称为编译（compile）。
 
 ![流程](v2-5318012f149345d562cfa255c6034d94_r.jpg)
 
@@ -69,12 +70,16 @@ dc_shell
 
 - **link_library（所有DC可能用到的库，以及购买的付费IP、存储器、IO、PAD、PLL等的库，db格式）**
 
-  > 在link_library的设置中必须包含"*"，表示DC在引用实例化模块或者单元电路时首先搜索已经调进DC memory的模块和单元电路。
-  > 该库中的cells, DC 无法进行映射，例如：RAM,ROM 及Pad，在RTL 设计中，这些cells 以实例化的方式引用
+  > 在link_library的设置中必须包含"*"，表示DC在引用实例化模块或者单元电路时首先搜索已经调进DC memory的模块和单元电路（已经translate过的GTECH网表）。
+  > 该库中的cells, DC 无法进行映射（成门电路），例如：RAM, ROM 及Pad，在RTL 设计中，这些cells以实例化的方式引用
+  > 如果在你的rtl代码中手动例化了foundary厂家提供的stdcell，当然GTECH网表中就会存在这个stdcell实例，那么link lib就必须包含这个stdcell的库（target_library）
+  > 如果所有rtl中全部是逻辑描述，没有例化任何macro，sram，特定的std cell等，那么link_library可以为空。
+
+  > 对于dcim的ip，是用模拟后端定制的，它作为一个macro，可以用db格式的库文件来表征引脚、时序信息等。在前端的时候，我们的完整rtl中可能写了一个dcim ip的行为级模型，但那个module只是用来行为级验证的，并不是用来综合的。综合的时候不要把这个行为级模型rtl包进来，而是采用db格式的库文件来作为顶层中dcim ip的reference。此时就应该将这个macro的db库作为link_library。这样在综合的时候，顶层模块例化了一个dcim ip，这个ip的reference并不是一个逻辑的行为级rtl module，而是一个db描述的macro。这样这个macro作为一个整体，内部的逻辑我们是不关心的，dc也是不会去综合这个macro内部结构的，我们关心的其实只是这个macro的pin和时序。
 
   ```tcl
   lappend search_path "/path/to/link_library_dir" ;# optional
-  set link_library "* link_library.db" ;# if search_path is set, link_library is the relative path to the search_path
+  set link_library [list * $target_library link_library.db] ;# if search_path is set, link_library is the relative path to the search_path
   ```
 
 - **symbol_library（符号库，单元电路显示的原理图库，sdb格式）**
@@ -125,9 +130,26 @@ uniquify ;# Each instance gets a unique design name
 
 - `set_operating_coditions`: 设置PVT条件
 
+  ![corner](image-20.png)
+
+  > PVT代表process（工艺），voltage（电压），temperature（温度）。corner（工艺角）是用来表征process的，包括了tt，ff，ss等。
+  > 静态时序分析一般仅考虑Best Case和Worst Case，也称作Fast Process Corner 和Slow Process Corner，分别对应极端的PVT条件。
+
+  ![pvt](image-21.png)
+
+  | Corner Condition       | Cell Designator | Process (PMOS) | Process (NMOS) | Voltage    | Temperature |
+  |------------------------|------------------|----------------|----------------|------------|-------------|
+  | Worst                  | WCCOM            | Slow           | Slow           | 0.9*V_dd   | 125°C       |
+  | Typical                | NCCOM            | Typical        | Typical        | V_dd       | 25°C        |
+  | Best                   | BCCOM            | Fast           | Fast           | 1.1*V_dd   | 0°C         |
+  | Low Temperature        | LTCOM            | Fast           | Fast           | 1.1*V_dd   | -40°C       |
+  | Worst at Low Temperature | WCLCOM          | Slow           | Slow           | 0.9*V_dd   | -40°C       |
+  | Maximum Leakage        | MLCOM            | Fast           | Fast           | 1.1*V_dd   | 125°C       |
+  | Worst at 0°C           | WCZCOM           | Slow           | Slow           | 0.9*V_dd   | 0°C         |
+
 - `set_wire_load`: A wire load model is an estimate of a net’s RC parasitics based on the net’s fanout.
 
-  > wire_load 模型的选择很重要，太悲观或太乐观的模型都将产生综合的迭带，在pre-layout 的综合中应选用悲观的模型
+  > wire_load 模型的选择很重要，太悲观或太乐观的模型都将产生综合的迭带，在pre-layout 的综合中应选用悲观的模型(ss, high temp, low voltage)
 
   ![wire load](image-10.png)
 
@@ -161,7 +183,7 @@ uniquify ;# Each instance gets a unique design name
   ```tcl
   set_driving_cell -lib_cell AND2 {IN1}
   set_driving_cell -lib_cell INV -pin Z -library tech_lib [all_inputs]
-  set_driving_cell -lib_cell INV -don’t_scale {IN1}
+  set_driving_cell -lib_cell INV -dont_scale {IN1}
   set_driving_cell -rise -lib_cell BUF1_TS -pin Z {IN1}
   set_driving_cell -fall -lib_cell DFF_TS -pin Q {IN1}
   ```
