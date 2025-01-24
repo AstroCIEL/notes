@@ -215,7 +215,7 @@ Floorplan 是确定芯片的宏观结构，包括芯片大小、I/O引脚位置�
    place_design
    ```
 
-2. **优化布局(pre CTS)**：
+2. **优化布局（pre CTS）**：
    - 使用 `place_opt_design` 优化布局，减少时序违例和拥塞。然后可以用`optDesign -preCTS`命令进行全局优化。然后可以用`timeDesign`来生成分析和优化时序并生成报告。
    - 例如：
 

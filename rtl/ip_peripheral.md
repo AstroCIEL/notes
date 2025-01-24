@@ -53,6 +53,38 @@ dcim_macro_bm(dcim_macro_bm.v)(2)
   > config_cim 顺序输入，并行输出的寄存器。每次输入新的lsb，寄存器向高位移位
 - cim_weight_collector.v
 
+## top
+
+### 接口
+
+```verilog
+module top(
+    input                       clk,
+    input                       tck,
+    input                       rstn,
+    input                       instruction_valid,//save instruction
+    input                       load_start,
+
+    input                       out_sel,
+    input                       out_load,
+    input                       out_sc_en,
+    input                       out_tdi,
+    output                      out_tdo,
+
+    input                         en_load,
+    input [2:0]                 config_sel,
+    input                       config_sc_en,
+    input                       config_tdi,
+    output                      config_tdo,
+
+    input                       mbist_test_h,
+    input                       mbist_reset_l,
+
+    output                      mbist_fail,
+    output                      mbist_done
+);
+```
+
 ## dcim_ip_bm
 
 > designed through analog flow, unsynthesizable.

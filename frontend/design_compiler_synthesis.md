@@ -1,4 +1,4 @@
-# Synthesis using Design Compiler
+# Synthesis using Design Compiler(Synopsis flow)
 
 2025.1.23
 
@@ -36,7 +36,7 @@ DC在综合过程中会把电路划分为以下处理对象：
 
 可以写一个makefile：
 
-```makefile
+```Makefile
 dc:
     dc_shell -f tcl/synthesis.tcl | tee ./dc.log
 ```
