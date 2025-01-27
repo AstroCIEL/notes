@@ -43,6 +43,6 @@ unzip filename.zip -d filedir
 ## tar
 
 ```bash
-tar -zcvf [文件名].tar.gz [文件目录] //打包成.gz文件
-tar -zxvf [文件名].tar.gz -C [文件目录] //解压.gz文件到指定目录
+tar -zcvf [文件名].tar.gz [文件目录] #打包成.gz文件
+tar -zxvf [文件名].tar.gz -C [文件目录] #解压.gz文件到指定目录
 ```

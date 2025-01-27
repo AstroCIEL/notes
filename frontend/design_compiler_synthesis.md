@@ -53,7 +53,12 @@ dc_shell
 
 #### 设置各种库文件
 
-![libs](image-5.png)
+| Library type       | Variable          | Default                        | File extension |
+|--------------------|-------------------|--------------------------------|----------------|
+| Target library     | target_library    | {"your_library.db"}            | .db            |
+| Link library       | link_library      | {"*", "your_library.db"}       | .db            |
+| Symbol library     | symbol_library    | {"your_library.sdb"}           | .sdb           |
+| DesignWare library | synthetic_library | {}                             | .sldb          |
 
 可以用`list_libs`命令查看当前已加载的库
 
@@ -102,7 +107,8 @@ dc_shell
   ![synthetic_library](image-4.png)
 
   ```tcl
-  set synthetic_library "/path/to/synthetic_library.sldb"
+  lappend search_path "/path/to/synthetic_library_dir" ;# e.g. /cadtools/synopsys/syn_vQ-2019.12-SP2/libraries/syn
+  set synthetic_library "synthetic_library.sldb"
   ```
 
 #### 其他初始设置

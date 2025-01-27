@@ -29,6 +29,7 @@ dcim_macro_bm(dcim_macro_bm.v)(2)
 ```
 
 总体来看，这就是在ip（只能处理整型、没有时序累加）的外面加了输入、输出、控制、检测模块。
+ip可以同时计算和写，因为在计算前会把要算的那些行锁存起来。
 
 ## rtl文件
 
@@ -44,11 +45,11 @@ dcim_macro_bm(dcim_macro_bm.v)(2)
 - mini_controller.v
   > mini_controller instruction里的都是不带cim_前缀的，例如ren，wen。然后通过instruction_valid来将instruction里的这些信号锁存，得到状态机的转换目标；然后在load_start有效时（时钟上升沿）允许状态转换（因此其实状态转换的目标只取决于load_start前一次instruction_valid时的instruction，因为它已经被锁存。）。状态机输出逻辑是根据状态输出cim_前缀的信号，例如cim_ren, cim_wen等等，这些输出信号会输入到dcim ip里。
 
-  >第一组状态机：REN_GLOBAL, REN_LOCAL, WEN_LOCAL之类的。当处于IDLE状态时，当load_start拉高的时候，状态才开始转换。在状态没有带LOOP的情况下，cnt达到instructin里给出的cnt上限就变回IDLE。如果是带LOOP的，则只要loop信号有效，就一直继续状态，不回到IDLE。因此如果进入LOOP状态，想要回到IDLE，必须让instruction valid一次来让所有信号归零，从而回到IDLE。
+  > 第一组状态机：REN_GLOBAL, REN_LOCAL, WEN_LOCAL之类的。当处于IDLE状态时，当load_start拉高的时候，状态才开始转换。在状态没有带LOOP的情况下，cnt达到instructin里给出的cnt上限就变回IDLE。如果是带LOOP的，则只要loop信号有效，就一直继续状态，不回到IDLE。因此如果进入LOOP状态，想要回到IDLE，必须让instruction valid一次来让所有信号归零，从而回到IDLE。
 
   > 第二组状态机：SCEN，SCEN_LOOP。该状态下输出的是cim_cen有效。cim_cen将输入到input_collector, 在有效时，q以LENGTH为单位进行移位，并行输出高LENGTH位msbs。
 - weight_collector.v
-  >weight_collector 顺序输入的寄存器so, 每次输入新的lsb，寄存器向高位移位；接受so并行输出load的寄存器q，并且可以以LENGTH位单位进行移位，并行输出LENGTH长度的msbs
+  > weight_collector 顺序输入的寄存器so, 每次输入新的lsb，寄存器向高位移位；接受so并行输出load的寄存器q，并且可以以LENGTH位单位进行移位，并行输出LENGTH长度的msbs
 - config_cim.v
   > config_cim 顺序输入，并行输出的寄存器。每次输入新的lsb，寄存器向高位移位
 - cim_weight_collector.v
@@ -71,7 +72,7 @@ module top(
     input                       out_tdi,
     output                      out_tdo,
 
-    input                         en_load,
+    input                       en_load,
     input [2:0]                 config_sel,
     input                       config_sc_en,
     input                       config_tdi,

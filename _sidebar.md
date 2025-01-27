@@ -1,15 +1,19 @@
 <!-- 侧边栏 docs/_sidebar.md -->
 
+- [**FLOW**](/flow.md)
+
 - 前端
-  - [1. dc](/frontend/design_compiler_synthesis.md)
+  - [DC](/frontend/design_compiler_synthesis.md)
 
 - 后端
-  - [1. innovus](/backend/innovus_procedure.md)
+  - [Innovus](/backend/innovus_procedure.md)
 
 - RTL
-  - [1. ip_periph](/rtl/ip_peripheral.md)
-  - [2. chip_top](/rtl/chip_top.md)
+  - [ip_periph](/rtl/ip_peripheral.md)
+  - [chip_top](/rtl/chip_top.md)
 
 - BASIC
-  - [1. tcl](/basic/tcl.md)
+  - [tcl](/basic/tcl.md)
+  - [bash](/basic/linux.md)
+  - [smic28HKD](/basic/smic28HKD.md)
 <!-- 以下略 -->
