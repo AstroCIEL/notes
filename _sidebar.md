@@ -13,6 +13,8 @@
   - [chip_top](/rtl/chip_top.md)
 
 - BASIC
+  - [flow](/basic/asic_flow.md)
+  - [verilog](/basic/verilog.md)
   - [tcl](/basic/tcl.md)
   - [bash](/basic/linux.md)
   - [smic28HKD](/basic/smic28HKD.md)
