@@ -35,7 +35,15 @@ DCO的rtl也是网表风格描述的，并非行为级风格描述，且例化�
 - global_ctrl.v
   > config_reg在sc_en有效的时候将q从高位往低位移位，tdi作为q的新最高位。时钟信号为tck，一个时钟移一位。输出的q会作为全局的config。
 
-  > scan_chain_xxx
+  - scan_chain_IF.v
+    > 在sc_en有效的时候，将q从高位往低位移位，tdi作为q的新最高位。时钟信号为tck，一个时钟移一位。再通过sel信号选择将q的哪一部分输出。
+  - scan_chain_weight.v
+    > 在sc_en有效的时候，将q从高位往低位移位，tdi作为q的新最高位。时钟信号为tck，一个时钟移一位，负责串行输入。clk负责并行输入，输入到so。q可以从移位生成，也可以从so赋值。最后输出为q的一部分
+  - scan_chain_psum.v
+    > clk负责并行输入，输入到so。寄存器q可以从so赋值，然后在tck下从高位向低位移动，串行输出最高位。
+  - read_compare.v
+    > 将串行输入加移位得到的q和并行输入的数据做比较
+  
 
 ## chip_top
 
