@@ -30,6 +30,20 @@ DC在综合过程中会把电路划分为以下处理对象：
 
 ![对象](v2-d656d11449c1cce5dfea71318b5d37fc_r.jpg)
 
+一个完整的顶层模块可以分为这几个部分：
+
+![top](image-23.png)
+
+上图是一个芯片的顶层设计，可以看到它被分层了两个层次：
+
+- 最外边是芯片的Pad,Pad 是综合工具中没有的，也不是工具能生成的，它由 Foundry 提供，并由设计者根据芯片外围的环境手工选择
+
+- 中间一层被分成四个部分，后三个部分 DC 不能综合，需要其他的办法来解决
+  - 其中最里面那个称为 Core，也就是 DC 可以综合的全同步逻辑电路，
+  - ASYNCH是异步时序部分，不属于DC的范畴；
+  - CLOCK GEN 是时钟产生模块（可能用到 PLL），尽管有一部分同步电路，但也不符合综合的条件；
+  - JTAG 是边界扫描的产生电路，这一部分可以由 Synopsys 的另外一个工具 BSD Compiler 自动生成。
+
 ## 流程
 
 ![process](1110317-20170325231311596-1606177239.png)
@@ -41,6 +55,39 @@ dc:
     dc_shell -f tcl/synthesis.tcl | tee ./dc.log
 ```
 
+### 注意
+
+对于2000.11 版的Design Compiler，用户可以通过四种方式启动Design Compiler，他们是——dc_shell 命令行方式、dc_shell-t 命令行方式、design_analyzer 图形方式和design_vision图形方式。其中后面两种图形方式是分别建立在前面两种命令行方式的基础上的。
+
+![dcshell](image-22.png)
+
+- dc_shell 命令行方式
+
+该方式以文本界面运行Design Compiler。在shell 提示符下直接输入”dc_shell”就可以进入这种方式。也可以在启动dc_shell 的时候直接调用dcsh 的脚本来执行(dc_shell –f script)。目前这种方式用的已经不是很普遍。
+
+- dc_shell-t 命令行方式
+
+该方式是以TCL（Tool Command Language 后面章节将有介绍）为基础的，在该脚本语言上扩展了实现Design Compiler 的命令。用户可以在shell 提示符下输入”dcshell-t”来运行该方式。该方式的运行环境也是文本界面。也可以在启动dc_shell-t 的时候直接调用tcl 的脚本来执行(dc_shell-t –f script)。TCL 命令行方式是现在推荐使用的命令行方式，相对shell 方式功能更强大，并且在Synopsys 的其他工具中也得到普遍使用。
+
+- design_analyzer 图形界面方式
+
+Design Analyzer 使用图形界面，如菜单、对话框等来实现Design Compiler 的功能，并提供图形方式的显示电路。用户可以在shell 提示符下打“design_analyzer方式。Design_analyzer 图形方式是今后要经常用到的图形界面方式。由于它所对应的是dc_shell 的命令行方式，所以我们不能在design_analyzer 里运行tcl 命令。另外需要注意的是：Design analyzer 的工作模式不是用于编辑电路图的，它只能用于显示HDL语言描述电路的电路图。
+
+- design_vision 图形界面方式
+
+Design_vision 是与tcl 对应的图形方式，用户可以在shell 提示符下打”design_vision”来运行该方式。由于它是在Windows NT 下开发的，在工作站环境下不太普及。
+
+> 不论dcsh 模式还是tcl 模式都提供了类似于unix 的shell 脚本的功能，包括变量赋值、控制流命令、条件判断等等，但是dcsh 模式的语法规则不同于tcl 的语法规则，所以两者的脚本不能通用。以下介绍的都是tcl脚本。
+
+| Tcl mode           | dcsh mode           |
+|--------------------|---------------------|
+| get_cells *U*      | find(cell, *U*)     |
+| get_nets *         | find(net, "*")      |
+| get_ports CLK      | find(port, CLK)     |
+| get_clocks CLK     | find(clock, CLK)    |
+| all_inputs         | all_inputs()        |
+| all_outputs        | all_outputs()       |
+
 ### 预综合过程（Pre-Synthesis Processes）：在综合过程之前的一些为综合做准备的步骤
 
 #### DC启动
@@ -48,7 +95,7 @@ dc:
 如果要一行一行地输tcl命令，可以启动dc_shell:
 
 ```tcl
-dc_shell
+dc_shell-t
 ```
 
 #### 设置各种库文件
@@ -139,7 +186,7 @@ uniquify ;# Each instance gets a unique design name
   ![corner](image-20.png)
 
   > PVT代表process（工艺），voltage（电压），temperature（温度）。corner（工艺角）是用来表征process的，包括了tt，ff，ss等。
-  > 静态时序分析一般仅考虑Best Case和Worst Case，也称作Fast Process Corner 和Slow Process Corner，分别对应极端的PVT条件。
+  > 静态时序分析一般仅考虑Best Case和Worst Case，也称作Fast Process Corner 和Slow Process Corner，分别对应极端的PVT条件。这里的corner就是一种广义的角，与前面提到的狭义的（工艺）corner不同。
 
   ![pvt](image-21.png)
 
@@ -152,6 +199,18 @@ uniquify ;# Each instance gets a unique design name
   | Worst at Low Temperature | WCLCOM          | Slow           | Slow           | 0.9*V_dd   | -40°C       |
   | Maximum Leakage        | MLCOM            | Fast           | Fast           | 1.1*V_dd   | 125°C       |
   | Worst at 0°C           | WCZCOM           | Slow           | Slow           | 0.9*V_dd   | 0°C         |
+
+  可以通过`report_library`命令查看当前库中所有单元的时序信息。
+
+  ```tcl
+  # 做建⽴时间分析的时候需要⽤到最差情况(max)的条件
+  set_operating_conditions -max "slow_125_1.62"
+  # 如果我们既要分析建⽴时间， ⼜要分析保持时间那么就要同时指定最差(max)和最好情况(min)
+  # 先设定作保持时间检查的库，core_slow.db 和 core_fast.db 分别是最差和最好条件下的⼯艺库⽂件
+  set_min_library core_slow.cb -min version core fast.db
+  # 设定两种时间检查需要⽤到的⼯作条件。
+  set_operating_conditions -max "slow_125_1.62" -min "fast_0_1.8"
+  ```
 
 - `set_wire_load`: A wire load model is an estimate of a net’s RC parasitics based on the net’s fanout.
 
