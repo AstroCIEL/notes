@@ -36,7 +36,7 @@ DC在综合过程中会把电路划分为以下处理对象：
 
 上图是一个芯片的顶层设计，可以看到它被分层了两个层次：
 
-- 最外边是芯片的Pad,Pad 是综合工具中没有的，也不是工具能生成的，它由 Foundry 提供，并由设计者根据芯片外围的环境手工选择
+- 最外边是芯片的Pad, Pad 是综合工具中没有的，也不是工具能生成的，它由 Foundry 提供，并由设计者根据芯片外围的环境手工选择
 
 - 中间一层被分成四个部分，后三个部分 DC 不能综合，需要其他的办法来解决
   - 其中最里面那个称为 Core，也就是 DC 可以综合的全同步逻辑电路，
@@ -54,6 +54,8 @@ DC在综合过程中会把电路划分为以下处理对象：
 dc:
     dc_shell -f tcl/synthesis.tcl | tee ./dc.log
 ```
+
+> |tee my.log 表示除了定向到 my.log⽂件外还要在屏幕中输出。
 
 ### 注意
 
@@ -108,6 +110,26 @@ dc_shell-t
 | DesignWare library | synthetic_library | {}                             | .sldb          |
 
 可以用`list_libs`命令查看当前已加载的库
+
+> Synopsis不读取lib格式，所以需要将lib格式的库文件转换为db格式的库文件。
+
+```tcl
+# 启动library compiler shell
+lc_shell 
+
+# 转换
+read_lib xxx.lib 
+write_lib xxx0 -format db -output xxx.db
+# 注意此处的xxx0是原先lib文件中lib名（并非文件名，虽然一般lib名和文件名一样）
+```
+
+根据不同的driver model，lib可以分成三类：Concurrent Current Source (CCS), Effective Current Source Model (ECSM), Non-Linear Delay Model (NLDM)
+
+| Library Format | Accuracy | Computation Speed | Filesize | Usage |Suitable for Noise & Power Analysis | Definition |
+| --- | --- | --- | --- | --- | --- | --- |
+| CCS | High | Slow | Large | Sign off | Yes | A highly accurate library format using multiple current sources to model the behavior of digital gates. |
+| ECSM | Medium | Moderate | Medium | Large design | Limited | A library format that uses effective current sources to approximate the behavior of digital circuits, balancing accuracy and computational complexity. |
+| NLDM | Low | Fast | Small | Out-dated nodes| No | A library format that models delay and output transition using look-up tables (LUTs) as a function of input slew and output load. |
 
 - **target_library（标准单元，综合后电路网表要最终映射到的库，db格式）**
 
@@ -187,6 +209,7 @@ uniquify ;# Each instance gets a unique design name
 
   > PVT代表process（工艺），voltage（电压），temperature（温度）。corner（工艺角）是用来表征process的，包括了tt，ff，ss等。
   > 静态时序分析一般仅考虑Best Case和Worst Case，也称作Fast Process Corner 和Slow Process Corner，分别对应极端的PVT条件。这里的corner就是一种广义的角，与前面提到的狭义的（工艺）corner不同。
+  > 时序分析中，best和worst是根据delay而言的，delay小的是best。但是时序越好，功率越差，这两者总是相反的。因此对delay而言best的时候，power可能是worst。
 
   ![pvt](image-21.png)
 
@@ -212,11 +235,17 @@ uniquify ;# Each instance gets a unique design name
   set_operating_conditions -max "slow_125_1.62" -min "fast_0_1.8"
   ```
 
+  > 一般一个lib文件的文件名中就蕴含了一个pvt条件（例如ttg_v0p9_25c），这样的话一个文件就对应了一个pvt条件下的时序和功耗信息。或者也可以打开lib文件，查看其中的`operating_coditions`属性。
+
 - `set_wire_load`: A wire load model is an estimate of a net’s RC parasitics based on the net’s fanout.
 
   > wire_load 模型的选择很重要，太悲观或太乐观的模型都将产生综合的迭带，在pre-layout 的综合中应选用悲观的模型(ss, high temp, low voltage)
 
   ![wire load](image-10.png)
+
+  DC 在估算连线延时时，会先算出连线的扇出，然后根据扇出查表，得出长度，再在长度的基础上计算出它的电阻和电容的大小。若扇出值超出表中的值（假设为4），那么 DC就要根据扇出和长度的斜率（Slope）外推算出此时的连线长度来。
+
+  > `set_wire_load_model`命令设置是⼀个模块内部连线的负载模型的估计;`set_wire_load_mode`命令设置是连接不同模块之间的连线的负载模型,包括了top，enclosed，segmented。
 
   ```tcl
   set_wire_load_model -name "10*10" -library my_lib.db
@@ -269,6 +298,8 @@ uniquify ;# Each instance gets a unique design name
 - `set_fanout_load`: model the external fanout effects by specifying the expected fanout load values on output ports. Design Compiler tries to ensure that the sum of the fanout load on the output port plus the fanout load of cells connected to the output port driver is less than the maximum fanout limit of the library, library cell, and design.
 
   > fanout load is not the same as load. fanout load is a unitless value that represents a numerical contribution to the total fanout. Load is a capacitance value. Design Compiler uses fanout load primarily to measure the fanout presented by each input pin. An input pin normally has a fanout load of 1, but it can have a higher value.
+
+> 在定义完环境属性之后，我们可以使用下面的几个命令检查约束是否施加成功: `check_timing`检查设计是否有路径没有加入约束; `check_design`检查设计中是否有悬空管脚或者输出短接的情况; `write_script`将施加的约束和属性写出到一个文件中，可以检查这个文件看看是否正确.
 
 ### 施加设计约束
 
@@ -341,6 +372,8 @@ uniquify ;# Each instance gets a unique design name
   ```
 
 #### 优化的约束：design goals and requirements
+
+> 对于时序约束，对于简单的设计，有包括如定义时钟，设置模块的输⼊输出延时等等；复杂的情况有非理想的单时钟网络(skew, latency)、同步多时钟网络（顶层有多个时钟，但是都是由同一个源时钟分频而来，所以称为同步）、异步多时钟网络、多周期路径等。
 
 ![delay](image-17.png)
 
@@ -425,17 +458,23 @@ uniquify ;# Each instance gets a unique design name
 
 #### 优化策略
 
-To meet the constraints, DC performs several optimization strategies to reduce the delay and area of the design.
+To meet the constraints, DC performs several optimization strategies to reduce the delay and area of the design. 优化分为几个层次，从高到低分别为：
 
+- architectural level optimization strategy: 最高层的优化
+  - DesignWare 选择: 例如使用哪种加法器（行波、超前进位等等）
+  - 共享⼦表达式(Sub-Expressions)
+  - 资源共享(Resource Sharing)
+  - 运算符排序(Operator Reordering)
 - logical level optimization strategy: first flatten then structure(they are two oppose process). global influence
   - flatten : remove structure. `set_flatten true`(false for default) 目的在于通过移去中间变量，减少输入和输出之间的逻辑层次，提高速度，但会带来面积上的压力。
   - structure: minimize generic logic. `set_structure true`通过添加中间变量，使逻辑共享。但会增加逻辑的延时。常用于非关键时序电路，如：随机逻辑和有限状态机。
+  > 由于 DC默认是用结构化的方式综合逻辑级电路，而且这种方式可以得到兼顾时序和面积的结果，因此我们可以先用这种方式优化。在优化后的电路中找出关键路径，看看关键路径上有没有符合使用 SOP电路的模块，王的这些亡便使用 SOP 的模块set_flatten，以便取得最佳的效果。
 - gate level optimization strategy: make design technology-dependent. local influence
   - Combinational Mapping
   - Sequential Mapping
 
 ```tcl
-compile –map_effort <medium(default) | high>
+compile –map_effort <low | medium(default) | high>
 # high, it does critical path re-synthesis, but it will use more CPU time, in some case the action of compile will not terminate.
 # 如果用“-map_effort high”,则DC 不可能structured 设计
 # "compile -map_effort high"，相当于使用"compile_ultra"
@@ -450,3 +489,7 @@ compile –only_design_rule
 ```
 
 ### 后综合
+
+## 参考资料
+
+联系作者获取文件
