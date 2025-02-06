@@ -1,6 +1,6 @@
 # Synthesis using Design Compiler(Synopsis flow)
 
-2025.1.23
+2025.2.6
 
 ## 概述
 
@@ -142,6 +142,8 @@ write_lib xxx0 -format db -output xxx.db
   set target_library "target_library.db" ;# if search_path is set, target_library is the relative path to the search_path
   ```
 
+  > 注意，在有些教程中会发现使用`set_app_var`而非`set`，其实都是可以的，因为`search_path`, `target_library`, `link_library`, `symbol_library`, `synthetic_library` 都是dc的保留变量，并非自定义的普通变量。
+
 - **link_library（所有DC可能用到的库，以及购买的付费IP、存储器、IO、PAD、PLL等的库，db格式）**
 
   > 在link_library的设置中必须包含"*"，表示DC在引用实例化模块或者单元电路时首先搜索已经调进DC memory的模块和单元电路（已经translate过的GTECH网表）。
@@ -235,7 +237,7 @@ uniquify ;# Each instance gets a unique design name
   set_operating_conditions -max "slow_125_1.62" -min "fast_0_1.8"
   ```
 
-  > 一般一个lib文件的文件名中就蕴含了一个pvt条件（例如ttg_v0p9_25c），这样的话一个文件就对应了一个pvt条件下的时序和功耗信息。或者也可以打开lib文件，查看其中的`operating_coditions`属性。
+  > 一般一个lib文件的文件名中就蕴含了一个pvt条件（例如ttg_v0p9_25c），这样的话一个文件就对应了一个pvt条件下的时序和功耗信息。或者也可以打开lib文件，查看其中的`operating_coditions`属性。因此可以在设置library的时候，读入多个条件的库文件，然后在这一步根据设置的环境条件来让工具选择使用哪一个环境下的库。
 
 - `set_wire_load`: A wire load model is an estimate of a net’s RC parasitics based on the net’s fanout.
 
@@ -321,6 +323,16 @@ uniquify ;# Each instance gets a unique design name
 > statrpoint: input ports 或时序cell 的clock pins;
 
 > endpoint: output ports 或时序cell 的data pins;
+
+#### 时序路径（组）
+
+DesignTime 对时序路径的分解是根据时序路径的起点和终点的位置来决定的。每一条时序路径都有一条起点和终点，起点是输入端口或者触发器的时钟输入端；终点是输出端口或者触发器的数据输入端，另外根据终点所在的触发器的时钟不同还可以对这些时序路径进行分组（Path Group），如下图电路中存在4条时序路径，3个路径组，CLK1 和 CLK2组分别表示他们的终点是受CLK1 和 CLK2 控制的，DEFAULT 组则说明他们的终点不受任何一个时钟控制。
+
+![path](image-24.png)
+
+再例如下⾯的⼀个电路，⼀共有 12 条时序路径和 3 条路径组。
+
+![path2](image-25.png)
 
 #### 设计规则的约束：technology-specific restriction
 
@@ -488,7 +500,38 @@ compile –only_design_rule
 # Perform only design rule fixing, take less time than regular compile because it is incremental.
 ```
 
-### 后综合
+### 时序分析
+
+默认的时候 `report_timing` 报告每⼀条路径组中的最⻓路径。 报告⼀共分为 4 个部分:
+
+![report timing](image-26.png)
+
+- 第一部分显示了路径的基本信息一一工作状态是 slow_125_1.62，工艺库名称为SSC_core_slow，连线负载模式是 enclosed。接下来指出这条最长路径的起点是 data1（输入端口），终点是u4（上升沿触发的触发器），属于 clk 路径组，做的检查是建立时间检查（max）。这一部分的最后还报告了电路的连线负载模型。
+
+  ![report timing2](image-27.png)
+
+- 第二部分列出了这条最长路径所经过的各个单元的延时情况，分成三列：第一列说明的是各个节点名称，第二列说明各个节点的延时，第三列说明路径的总延时，后面所接的f或者r则暗示了这个延时是单元的哪个时钟边沿。例如图中的路径经过了一个反相器，一个二输入与非门，一个二输入 MUX，最后到达 D触发器。其中反相器的延时为 0.12ns，路径总延时为 1.61ns。
+
+  ![report timing3](image-28.png)
+
+- 第三部分说明了这条路径所要求的延时，它是设计者通过时序约束施加的。例如时钟周期为5ns，触发器的建立时间为0.19（从工艺库中得到），要满足建立时间的要求，组合路径延时必须在4.81ns 之内。
+
+  ![report timing4](image-29.png)
+
+- 第四部分为时序报告的结论，它把允许的最大时间减去实际的到达时间，得到一个差值，这个差值称为时序裕量（Timing margin），如果为正数，则说明实际电路满足时序要求，为负数则说明有时序违反。上图的裕量为3.20，说明最长路径满足建立时间的要求，且有3.20ns的裕量。暗含的意思是所有这个 clk 组的路径都满足建立时间的要求，并且裕量大于 3.20ns。
+
+  ![margin](image-30.png)
+
+除了报告电路综合后的时序之外， 还可以帮助我们诊断综合电路中存在的时序问题,如：
+
+![eg](image-31.png)
+
+这个例⼦仅仅列出了报告的第⼆部分， 报告的右边有四头鲸， 它们分别指出了电路中存在的四个问题：
+
+- 第⼀个问题出现在 input external delay ⼀栏，这⼀栏对应的就是时序约束中施加的inputLdelay，它的值力 22.4ns，假设时钟周期为30ns，那么可以看出这个 input_delay 就已经占据了整个周期的70%多，因此留给下面单元的裕量就很少了。需要考虑是不是需要设置这么大的input_delay。
+- 第二个问题出现在路径中的6个串连的buffer 上，它们对应的单元分别是 INVF、NBF、BF、BF、NBF 以及 NBF。就逻辑功能来看，6个显得多余，而且产生了不必要的延时。
+- 第三个问题是由一个延时为 10.72的或门造成的。其他的单元延时一般不超过 2ns，一个 10.72的单元是不是因为负载过重引起的呢？值得仔细审查。
+- 最后一个问题反映在这条路径穿过的层次上。从设计分层那一节可以知道，要使延时最小，应该把组合路径全部放在一个模块内。而这条组合逻辑同时穿过了 u_proc、u_proc/u_dcl、u_proc/u_ctl 以及u_init 四个层次，可以通过 group/ungroup 命令把层次重新组织一下。
 
 ## 参考资料
 
