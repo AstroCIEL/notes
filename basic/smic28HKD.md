@@ -134,7 +134,6 @@ smic28HKD_0918_1P8M_6Ic_1TMc_1MTTc_ALPA2_oa_cds_2023_12_15_v1.0_rev0_0
 ## 文件名后缀
 
 1. .lib (Liberty Format)：C家时序库，可读
-
   - 用于描述标准单元库的时序和功耗信息。EDA 工具使用这些文件进行时序分析和功耗估算。
   - 根据不同的driver model，可以分成三类：Concurrent Current Source (CCS), Effective Current Source Model (ECSM), Non-Linear Delay Model (NLDM)
 
@@ -153,30 +152,41 @@ smic28HKD_0918_1P8M_6Ic_1TMc_1MTTc_ALPA2_oa_cds_2023_12_15_v1.0_rev0_0
   ```tcl
   # 启动library compiler shell
   lc_shell 
-  
+   
   # 转换
   read_lib xxx.lib 
-  write_lib xxx -format db -output xxx.db
+  write_lib xxx0 -format db -output xxx.db
+  # 注意此处的xxx0是原先lib文件中lib名（并非文件名，虽然一般lib名和文件名一样）
   ```
+
 3. .lef (Library Exchange Format)：物理库
   - 包含物理设计信息，如单元的大小、引脚位置和金属层信息。用于布局和布线（Place and Route）工具。是C 家物理库的描述格式。LEF 分为tech lef 跟cell lef 两种，不论是哪个阶段的工具要使用lef 都必须先读入tech lef 再读入cell lef, 因为cell lef 中要引用tech lef 中定义的信息。
   - Tech lef 中定义了metal layer, via, design rule 等信息，请详细研读下面几张从油管上抠出来的图，图中较详细介绍了tech lef, cell lef 各包含哪些信息以及cell lef 跟cell abstract view 的对应关系。
+
 4. .gds (Graphic Data System)：
   - 包含芯片的物理布局信息，用于制造掩模。GDSII 是集成电路设计中的标准格式。
+
 5. .v (Verilog)：
   - 用于描述电路的功能和行为。Verilog 文件通常用于仿真和综合。
+
 6. .cdl (Circuit Description Language)：
   - 包含电路的网表信息，用于 LVS（Layout vs. Schematic）检查。
+
 7. .spice (Simulation Program with Integrated Circuit Emphasis)：
   - 用于电路仿真，描述电路的网表和元件参数。
+
 8. .tcl (Tool Command Language)：
   - 脚本文件，用于自动化 EDA 工具的操作和流程。
+
 9. .def (Design Exchange Format)：
   - 包含设计的物理布局信息，如单元的位置和连接关系。用于布局和布线工具。
+
 10. .sdc (Synopsys Design Constraints)：
   - 包含设计的时序约束信息，用于时序分析和优化。
+
 11. .spef (Standard Parasitic Exchange Format)：
   - 包含寄生参数信息，用于时序分析和信号完整性检查。
+  
 12. .map (Mapping File)：
   - 用于映射不同的文件格式或命名约定，通常在 LVS 和 DRC 检查中使用。
 
