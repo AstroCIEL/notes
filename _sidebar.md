@@ -10,7 +10,9 @@
   - [SramCompiler](/backend/sram_compiler.md)
 
 - RTL
-  - [ip_periph](/rtl/ip_peripheral.md)
+  - [ip_core](/rtl/ip_core.md)
+  - [fp_core](/rtl/fp_core.md)
+  - [tensor_core](/rtl/tensor_core.md)
   - [chip_top](/rtl/chip_top.md)
 
 - BASIC

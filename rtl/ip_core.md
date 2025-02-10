@@ -1,31 +1,35 @@
-# ip_peripheral
+# ip core
 
-> /ip_periph_rtl/rtl/
+> /ip_core_review/rtl/
+> /ip_core_review/front_end_sim/list.f
+
+```text
+/rtl/psum_collector.v
+/rtl/top_cim.v
+/rtl/dcim_macro_bm.v
+/rtl/input_collector.v
+/rtl/mini_controller.v
+/rtl/dcim_macro_32_bm.v
+/rtl/weight_collector.v
+/rtl/config_cim.v
+/rtl/cim_weight_collector.v
+/rtl/mbist_a_g.v
+/rtl/mbist_comp.v
+/rtl/dcim_ip_bm.v
+```
 
 ## 层次
 
 ```text
-top(top.v)(5)
-    config_cim_inst config_cim(config_cim.v)
-    config_instruction_inst config_cim (config_cim.v)
-    config_addr_inst config_cim(config_cim.v)
-    config_exp_inst config_cim(config_cim.v)
-    top_cim_inst top_cim (top_cim.v)(8)
-        mini_controller_inst mini controller(mini controller.v)
-        weight_collector_inst weight_collector (weight collector.v)
-        input_collector_inst input_collector(input_collector.v)
-        mbist_a_g_inst mbist_a_g (mbist_a_g.v)
-        dcim_ip_bm_inst dcim_ip_bm(dcim_ip_bm.v)(64)
-            sum_block[0:15].a_t_0~3 adder_tree (dcim_ip_bm.v)
-        cim_weight_collector_inst cim_weight_collector(cim_weight_collector.v)
-        psum_collector_inst psum_collector (psum_collector.v)
-        mbist_comp_inst:mbist_comp(mbist_comp.v)
-dcim_macro_bm(dcim_macro_bm.v)(2)
-    bit_shifter input_bit_shift (dcim_macro_bm.v)
-    dcim_macro_32_bm_inst:dcim_macro_32_bm (dcim_macro_32_bm.v)(65)
-        dcim_ip_bm_inst dcim_ip_bm(dcim_ip_bm.v)(64)
-            sum_block[0:15].a_t_0~3 adder_tree (dcim_ip_bm.v)
-        shift_acc_block[0:15].shift_acc_0~3:shift_accumulator(dcim_macro_32_bm.v)
+top_cim (top_cim.v)(8)
+    mini_controller_inst mini controller(mini controller.v)
+    weight_collector_inst weight_collector (weight collector.v)
+    input_collector_inst input_collector(input_collector.v)
+    mbist_a_g_inst mbist_a_g (mbist_a_g.v)
+    dcim_ip_bm_inst dcim_ip_bm(dcim_ip_bm.v)(HARD MACRO)
+    cim_weight_collector_inst cim_weight_collector(cim_weight_collector.v)
+    psum_collector_inst psum_collector (psum_collector.v)
+    mbist_comp_inst:mbist_comp(mbist_comp.v)
 ```
 
 总体来看，这就是在ip（只能处理整型、没有时序累加）的外面加了输入、输出、控制、检测模块。
