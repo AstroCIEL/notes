@@ -22,7 +22,7 @@
 ## 层次
 
 ```text
-top_cim (top_cim.v)(8)
+top_cim (top_cim.v)
     mini_controller_inst mini controller(mini controller.v)
     weight_collector_inst weight_collector (weight collector.v)
     input_collector_inst input_collector(input_collector.v)
@@ -30,7 +30,7 @@ top_cim (top_cim.v)(8)
     dcim_ip_bm_inst dcim_ip_bm(dcim_ip_bm.v)(HARD MACRO)
     cim_weight_collector_inst cim_weight_collector(cim_weight_collector.v)
     psum_collector_inst psum_collector (psum_collector.v)
-    mbist_comp_inst:mbist_comp(mbist_comp.v)
+    mbist_comp_inst mbist_comp(mbist_comp.v)
 ```
 
 总体来看，这就是在ip（只能处理整型、没有时序累加）的外面加了输入、输出、控制、检测模块。

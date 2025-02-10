@@ -26,7 +26,7 @@
 ## 层次
 
 ```text
-top(top.v)(5)
+top(top.v)
     config_cim_inst config_cim(config_cim.v)
     config_instruction_inst config_cim (config_cim.v)
     config_addr_inst config_cim(config_cim.v)
