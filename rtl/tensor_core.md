@@ -1,6 +1,7 @@
-# ip core
+# tensor core
 
 > /TCORE_0929/
+
 > /TCORE_0929/TCORE_rtl/rtl_sim/list.f
 
 ```text
