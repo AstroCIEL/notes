@@ -71,4 +71,4 @@ module IO_TOP
 
 ### 图例
 
-![IO_TOP](./iotop.png)
+![IO_TOP](./io_top.png)
