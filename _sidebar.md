@@ -13,6 +13,7 @@
   - [ip_core](/rtl/ip_core.md)
   - [fp_core](/rtl/fp_core.md)
   - [tensor_core](/rtl/tensor_core_04.md)
+  - [IO_TOP](/rtl/IO_TOP.md)
   - [chip_top](/rtl/chip_top.md)
 
 - BASIC
