@@ -404,18 +404,6 @@ Floorplan 是确定芯片的宏观结构，包括芯片大小、I/O引脚位置�
 
 签核是最终验证设计的正确性，确保设计满足时序、功耗和物理规则。
 
-1. **时序签核**：
-   - 使用 `extractRC` 提取寄生参数，并使用 `timing_analysis` 进行时序分析。
-   - 例如：`timing_analysis -setup -hold`
-2. **功耗签核**：
-   - 使用 `power_analysis` 进行功耗分析。
-   - 例如：`power_analysis -average`
-3. **物理签核**：
-   - 使用 `verify_drc` 和 `verify_lvs` 检查DRC和LVS。
-   - 例如：`verify_drc` 和 `verify_lvs`
-4. **生成GDSII**：
-   - 使用 `write_gds` 生成GDSII文件。
-   - 例如：`write_gds design.gds`
 
 ---
 

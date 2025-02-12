@@ -31,7 +31,7 @@ top(top.v)
     config_instruction_inst config_cim (config_cim.v)
     config_addr_inst config_cim(config_cim.v)
     top_cim_inst top_cim (top_cim.v)
-        mini_controller_inst mini controller(mini controller.v)
+        mini_controller_inst mini_controller(mini controller.v)
         weight_collector_inst weight_collector (weight collector.v)
         input_collector_inst input_collector(input_collector.v)
         cim_weight_collector_inst cim_weight_collector(cim_weight_collector.v)
@@ -43,7 +43,7 @@ top(top.v)
             controller_inst controller(controller.v)
             dcim_macro_bm(dcim_macro_bm.v)
                 bit_shifter input_bit_shift (dcim_macro_bm.v)
-                dcim_macro_32_bm_inst:dcim_macro_32_bm (dcim_macro_32_bm.v)
+                dcim_macro_32_bm_inst dcim_macro_32_bm (dcim_macro_32_bm.v)
                     dcim_ip_bm_inst dcim_ip_bm(dcim_ip_bm.v)(HARD MACRO)
                     shift_acc_block[0:15].shift_acc_0~3:shift_accumulator(dcim_macro_32_bm.v)
 ```
@@ -92,4 +92,10 @@ module top(
     output                      config_tdo,
 );
 ```
+
+## top_bm
+
+### 图例
+
+![top_bm](image-2.png)
 

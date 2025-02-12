@@ -1,4 +1,4 @@
-# Synthesis using Design Compiler(Synopsis flow)
+# Synthesis using Design Compiler(synopsys flow)
 
 2025.2.6
 
@@ -111,7 +111,7 @@ dc_shell-t
 
 可以用`list_libs`命令查看当前已加载的库
 
-> Synopsis不读取lib格式，所以需要将lib格式的库文件转换为db格式的库文件。
+> synopsys不读取lib格式，所以需要将lib格式的库文件转换为db格式的库文件。
 
 ```tcl
 # 启动library compiler shell
