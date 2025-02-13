@@ -1,4 +1,4 @@
-# Synthesis using Design Compiler(synopsys flow)
+# Synthesis using Design Compiler(Synopsys flow)
 
 2025.2.6
 
