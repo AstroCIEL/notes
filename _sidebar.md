@@ -3,8 +3,8 @@
 - [**FLOW**](/flow.md)
 
 - 前端
-  - [design compiler](/frontend/design_compiler_synthesis.md)
   - [vcs&verdi](/frontend/vcs_verdi.md)
+  - [design compiler](/frontend/design_compiler_synthesis.md)
 
 - 后端
   - [Innovus](/backend/innovus_procedure.md)
