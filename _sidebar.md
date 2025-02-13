@@ -16,6 +16,7 @@
   - [tensor_core](/rtl/tensor_core_04.md)
   - [IO_TOP](/rtl/IO_TOP.md)
   - [chip_top](/rtl/chip_top.md)
+  - [DCO](/rtl/DCO.md)
 
 - BASIC
   - [flow](/basic/asic_flow.md)
