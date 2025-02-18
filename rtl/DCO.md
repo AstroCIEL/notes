@@ -17,9 +17,11 @@ DCO可以独立使用，作为片上时钟的的产生模块。其输入都是�
 
 > 这里介绍的DCO是基于贾老师设计的tsmc22的DCO修改而来。贾老师的原文件在`/project/work/home/tyiia/common/example/tsmc22nm/DCO 22nm`
 
-基于smic22工艺。文件位置在`/work/home/rhxu/DCO_smic/`.
-
 ![dco](image-4.png)
+
+此次修改后的DCO基于smic22工艺。文件位置在`/work/home/rhxu/DCO_smic/`.
+
+![DCO1](DCO1.png)
 
 | pin       | in/out   |description                        |
 |-----------|----------|-----------------------------------|
@@ -30,13 +32,17 @@ DCO可以独立使用，作为片上时钟的的产生模块。其输入都是�
 | EXT_CLK   | in       | External clock source (Backup clock)                           |
 | CLK_SEL   | in       | Select clock. 0: DCO clock, 1: External clock                  |
 | FREQ_SEL  | in[1:0]  | Divider for tile clock. 00: DCO clk, 01: DCO÷2, 11: DCO÷4      |
-| DIV_SEL   | in[1:0]  | Divider ratio for test clock: 00: DCO clk, 01: DCO÷2, 11: DCO÷4|
+| DIV_SEL   | in[1:0]  | Divider ratio for test clock: 00: ÷1, 01: ÷2, 11: ÷4|
 | CLK       | out      | High-speed clock for tile logics                               |
 | CLK_DIV   | out      | Divided clock. Routed off chip for testing.                    |
 
 CLK是用于片上所有逻辑的时钟，CLK_DIV一般是接到芯片外部用于测试。
 
 > 修改sel配置后可能需要用RSTN复位后才能正常产生时钟信号。
+
+![DCO2](DCO2.png)
+
+以上是与顶层IO相连的部分以及与顶层模块的关系。
 
 ## 综合
 

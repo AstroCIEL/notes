@@ -183,9 +183,28 @@ set sum [expr $a + $b]
 puts $sum   # 输出：15
 ```
 
-## 1.6 **流程控制**
+## 1.6 字典
+
+### 一维字典
+
+```tcl
+set proj(corner) "tt_0p8v_25c" ;# 定义一个叫proj的字典，键为corner，值为tt_0p8v_25c
+puts $proj(corner)   # 输出：tt_0p8v_25c
+```
+
+### 二维字典
+
+```tcl
+set proj(corner,P) "tt"
+set proj(corner,V) "0.8"
+set proj(corner,T) "25"
+puts $proj(corner,P)   # 输出：tt
+```
+
+## 1.7 **流程控制**
 
 ### 条件语句
+
 TCL 使用 `if` 语句进行条件判断：
 
 ```tcl
@@ -198,9 +217,11 @@ if {$x > 0} {
 ```
 
 ### 循环语句
+
 TCL 支持多种循环语句，包括 `for`、`while` 和 `foreach`。
 
 **for 循环：**
+
 ```tcl
 for {set i 0} {$i < 5} {incr i} {
     puts $i
@@ -208,6 +229,7 @@ for {set i 0} {$i < 5} {incr i} {
 ```
 
 **while 循环：**
+
 ```tcl
 set i 0
 while {$i < 5} {
@@ -217,6 +239,7 @@ while {$i < 5} {
 ```
 
 **foreach 循环：**
+
 ```tcl
 set fruits {apple banana cherry}
 foreach fruit $fruits {
@@ -224,7 +247,8 @@ foreach fruit $fruits {
 }
 ```
 
-## 1.7 **过程与函数**
+## 1.8 **过程与函数**
+
 TCL 中的过程是通过 `proc` 命令定义的。
 
 ```tcl
