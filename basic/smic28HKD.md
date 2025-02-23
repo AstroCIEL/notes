@@ -183,6 +183,12 @@ smic28HKD_0918_1P8M_6Ic_1TMc_1MTTc_ALPA2_oa_cds_2023_12_15_v1.0_rev0_0
 
 10. .sdc (Synopsys Design Constraints)：
   - 包含设计的时序约束信息，用于时序分析和优化。
+  - Sdc文件是我们在进行电路RTL设计后，对所做设计进行时序约束的DC综合脚本文件，以便于综合工具按照SDC文件时序约束要求进行电路综合产生电路网表，也会产生相应的sdf文件和sdc文件，此时的sdc文件格式与我们在综合前sdc文件格式上不同，实质上是一样的
+
+11. .sdf (Standard Delay File)：
+  - 包含综合后的时序信息，用于时序分析和优化。
+  - 我们通过综合工具产生了电路网表和sdf，但此时的sdf时序文件只是粗略的描述了电路上的时序和cell延时，因为此时的网表只是按照RTL设计和时序约束映射成foundry的stand_cell链接关系，没有位置关系；后续的布局布线我们才会定下cell的位置以及cell之间的net长度，由于要修善时序，我们还会做时钟树，也就是在net上加buffer，等等.
+  - 即是说我们在做布局布线时会导入综合前或后的sdc文件以及综合网表来产生具有准确时序信息的sdf文件用于后仿真。
 
 11. .spef (Standard Parasitic Exchange Format)：
   - 包含寄生参数信息，用于时序分析和信号完整性检查。

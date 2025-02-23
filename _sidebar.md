@@ -24,5 +24,6 @@
   - [verilog](/basic/verilog.md)
   - [tcl](/basic/tcl.md)
   - [bash](/basic/linux.md)
+  - [makefile](/basic/makefile.md)
   - [smic28HKD](/basic/smic28HKD.md)
 <!-- 以下略 -->
