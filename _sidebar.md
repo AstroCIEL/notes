@@ -4,6 +4,7 @@
 
 - 前端
   - [vcs&verdi](/frontend/vcs_verdi.md)
+  - [spyglass](/frontend/spyglass.md)
   - [design compiler](/frontend/design_compiler_synthesis.md)
 
 - 后端
