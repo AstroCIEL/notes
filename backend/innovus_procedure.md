@@ -404,6 +404,29 @@ Floorplan 是确定芯片的宏观结构，包括芯片大小、I/O引脚位置�
 
 签核是最终验证设计的正确性，确保设计满足时序、功耗和物理规则。
 
+1. **填充空白区域**
+   - 使用 `addFiller` 填充空白区域。
+   
+   ```tcl
+   addFiller
+   ecoRoute -fix_drc
+   verify_drc
+   ```
+
+2. **添加电源端口**
+   - 使用 `createPGPin` 添加电源端口，需要与之前打的stripe重合
+   
+   ```tcl
+   for { set i 0 } { $i <= 32 } { incr i } {
+      set initX [expr 13.5 + $i *36]
+      set initY 0.75
+      set stripeHeight 1198.3
+      set stripeWidth 2
+      createPGPin VSS -geom M8 $initX $initY [expr $initX + $stripeWidth] [expr $initY + $stripeHeight]
+   }
+   ...
+   ```
+
 
 ---
 

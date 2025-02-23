@@ -22,7 +22,7 @@ b make all # makefile正常编写，只是在make的前面加b即可
   - tensor_core有时也被称为multi_core。
   - 上一次流片最终的gds在top_dcim_project/calibre/drc/top_dcim_project_v2.gds，这次需要保持IO不变。
 
-2. 使用的工艺是1p8m（6m_1tm_1mtt）0.9/1.8v平台，工艺库在/work/home/wumeng/SMIC22_INSTALL/SMIC28HKD_22ULP/
+2. 使用的工艺是1p8m（6m_1tm_1mtt_alap2）0.9/1.8v平台，工艺库在/work/home/wumeng/SMIC22_INSTALL/SMIC28HKD_22ULP/
   - std cell在IP/STD/文件夹下
   - StarRC在IP/STD/SCC28NHKD_HDC30P140_RVT_V01p1a/CCI/
   - XRC在SPDK28HKD_0918_OA_CDS_V1.0_REV0.0/smic28HKD_0918_1P8M_6Ic_1YMc_1MTTc_ALPA2_oa_cds_2023_12_15_v1.0_rev0_0/Calibre/XRC/
