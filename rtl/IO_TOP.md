@@ -6,15 +6,12 @@
 
 ```text
 IO_TOP(IO_TOP.v)
-    config_pll_inst config_cim(config_cim.v)
-    PLL_ADAPTIVE_inst PLL_ADAPTIVE(HARD MACRO)
+    config_dco_inst config_cim(config_cim.v)
+    DCO_inst DCO(HARD MACRO)
     fp_core_inst0 fp_core(HARD MACRO)
     ip_core_inst1 ip_core(HARD MACRO)
     multi_core_inst multi_core(HARD MACRO)
     PDDWUW0408SDGH_V/H (io cells)
-    DECAP_345x85
-    DECAP_750x502
-    DECAP_1850x122
 ```
 
 ## top
@@ -25,9 +22,9 @@ IO_TOP(IO_TOP.v)
 module IO_TOP
 (
     input IP_SEL,
-    input PLL_RSTN,
-    input PLL_SC_EN,
-    input PLL_TDI,
+    input DCO_RSTN,
+    input DCO_SC_EN,
+    input DCO_TDI,
     input CLK,
     input CLK_SEL,
     input TCK,
@@ -64,14 +61,16 @@ module IO_TOP
     output CONFIG_TDO_R,
     output MBIST_FAIL,
     output MBIST_DONE,
-    output PLL_CLK_DIV,
-    output PLL_TDO
+    output DCO_CLK_DIV,
+    output DCO_TDO
 );
 ```
 
 ### 图例
 
-![IO_TOP](./io_top.png)
+![iotop](image-7.png)
+
+![dco](DCO2.jpg)
 
 ### layout
 
