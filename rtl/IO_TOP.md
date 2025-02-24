@@ -11,8 +11,9 @@ IO_TOP(IO_TOP.v)
     fp_core_inst0 fp_core(HARD MACRO)
     ip_core_inst1 ip_core(HARD MACRO)
     multi_core_inst multi_core(HARD MACRO)
-    PDDWUW0408SDGH_V/H (io cells)
 ```
+
+![iotop](image-7.png)
 
 ## top
 
@@ -68,10 +69,8 @@ module IO_TOP
 
 ### 图例
 
-![iotop](image-7.png)
-
 ![dco](DCO2.jpg)
 
-### layout
+### layout（上一版）
 
 ![layout](image-3.png)
