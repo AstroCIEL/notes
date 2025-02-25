@@ -24,23 +24,25 @@
 
 ```text
 top(top.v)
-    config_cim_inst config_cim(config_cim.v)
-    config_instruction_inst config_cim (config_cim.v)
-    config_addr_inst config_cim(config_cim.v)
-    config_exp_inst config_cim(config_cim.v)
+    config_cim_inst config_cim(config_cim.v)                                    # 扫描链用于配置cim_mask_en, sign, ema_rsa, ema_rwl等
+    config_instruction_inst config_cim (config_cim.v)                           # 扫描链用于配置cen, ren_global, ren_local等
+    config_addr_inst config_cim(config_cim.v)                                   # 扫描链用于配置addr
+    config_exp_inst config_cim(config_cim.v)                                    # 扫描链用于配置exp
     top_cim_inst top_cim(top_cim.v)
-        mini_controller_inst mini controller(mini controller.v)
-        weight_collector_inst weight_collector (weight collector.v)
-        input_collector_inst input_collector(input_collector.v)
-        mbist_a_g_inst mbist_a_g (mbist_a_g.v)
-        dcim_ip_bm_inst dcim_ip_bm(dcim_ip_bm.v)(HARD MACRO)
-        cim_weight_collector_inst cim_weight_collector(cim_weight_collector.v)
-        psum_collector_inst psum_collector (psum_collector.v)
-        mbist_comp_inst mbist_comp(mbist_comp.v)
+        mini_controller_inst mini controller(mini controller.v)                 # 状态机，根据instruction来输出控制dcim ip的读/写使能信号
+        weight_collector_inst weight_collector (weight collector.v)             # 扫描链用于配置weight
+        input_collector_inst input_collector(input_collector.v)                 # 扫描链用于配置input
+        mbist_a_g_inst mbist_a_g (mbist_a_g.v)                                  # 在mbist模式下自动控制输出控制dcim ip的读/写使能信号
+        dcim_ip_bm_inst dcim_ip_bm(dcim_ip_bm.v)(HARD MACRO)                    # ip 行为级模型
+        cim_weight_collector_inst cim_weight_collector(cim_weight_collector.v)  # 扫描链收集dcim ip的Q
+        psum_collector_inst psum_collector (psum_collector.v)                   # 扫描链收集dcim ip的psum
+        mbist_comp_inst mbist_comp(mbist_comp.v)                                # 用于比较dcim ip输出的Q和当时写入的值是否一致
 ```
 
 总体来看，这就是在ip（只能处理整型、没有时序累加）的外面加了输入、输出、控制、检测模块。
 ip可以同时计算和写，因为在计算前会把要算的那些行锁存起来。
+
+![ipcore](image-12.png)
 
 ## rtl文件
 
@@ -56,14 +58,49 @@ ip可以同时计算和写，因为在计算前会把要算的那些行锁存起
 - mini_controller.v
   > mini_controller instruction里的都是不带cim_前缀的，例如ren，wen。然后通过instruction_valid来将instruction里的这些信号锁存，得到状态机的转换目标；然后在load_start有效时（时钟上升沿）允许状态转换（因此其实状态转换的目标只取决于load_start前一次instruction_valid时的instruction，因为它已经被锁存。）。状态机输出逻辑是根据状态输出cim_前缀的信号，例如cim_ren, cim_wen等等，这些输出信号会输入到dcim ip里。
 
-  > 第一组状态机：REN_GLOBAL, REN_LOCAL, WEN_LOCAL之类的。当处于IDLE状态时，当load_start拉高的时候，状态才开始转换。在状态没有带LOOP的情况下，cnt达到instructin里给出的cnt上限就变回IDLE。如果是带LOOP的，则只要loop信号有效，就一直继续状态，不回到IDLE。因此如果进入LOOP状态，想要回到IDLE，必须让instruction valid一次来让所有信号归零，从而回到IDLE。
+  > 第一组状态机：REN_GLOBAL, REN_LOCAL, WEN_LOCAL之类的。当处于IDLE状态时，当load_start拉高的时候，状态才开始转换。在状态没有带LOOP的情况下，cnt达到instruction里给出的cnt上限就变回IDLE。如果是带LOOP的，则只要loop信号有效，就一直继续状态，不回到IDLE。因此如果进入LOOP状态，想要回到IDLE，必须让instruction valid一次来让所有信号归零，从而回到IDLE。
 
   > 第二组状态机：SCEN，SCEN_LOOP。该状态下输出的是cim_cen有效。cim_cen将输入到input_collector, 在有效时，q以LENGTH为单位进行移位，并行输出高LENGTH位msbs。
 - weight_collector.v
   > weight_collector 顺序输入的寄存器so, 每次输入新的lsb，寄存器向高位移位；接受so并行输出load的寄存器q，并且可以以LENGTH位单位进行移位，并行输出LENGTH长度的msbs
 - config_cim.v
-  > config_cim 顺序输入，并行输出的寄存器。每次输入新的lsb，寄存器向高位移位
+  > config_cim 顺序输入，并行输出的寄存器。每次输入新的lsb，寄存器向高位移位。
 - cim_weight_collector.v
+
+## dcim_ip_bm(behavioral model)
+
+> designed through analog flow, unsynthesizable.
+
+> 内部寄存器大小为528x256位，或(16x33)x(64x4)位，即64列4bit权重，33行尺寸为16的subarray。
+
+> 输出是单bit输入feature和4bit权重的按列累加和，没有时序上的累加。（时序上的累加需要在外部接一个shift accumulator）
+
+### 接口
+
+```verilog
+module  dcim_ip_bm(  //rstn,
+    input CLK, WEN, REN_GLOBAL, REN_LOCAL,
+    input   [1:0]  EMA_RSA,
+    input   [1:0]  EMA_RWL,
+    input   [`ADDR_WIDTH-1:0]      ADDR,
+    //input  rstn;  //for input bit shifter and shift-accumulator
+    input   [`EXP_WIDTH-1:0]       I_EXP,
+    output  [`EXP_WIDTH*`DCIM_COL/2-1:0]    O_EXP,
+    input   [`DCIM_COL-1:0]        MASK,
+    input   [`SIGN_CONFIG-1:0]     SIGN,
+
+    input   [`MEM_WIDTH-1:0]       D,
+    output  [`MEM_WIDTH-1:0]       Q,
+    input   [`DCIM_ROW-1:0]        IFN,
+
+    output  [`EXP_WIDTH-1:0]       I_EXPDRV,
+    output  [`SIGN_CONFIG-1:0]     SIGNDRV,
+    output  [`DCIM_ROW-1:0]        IFNDRV,
+    output  [(`OUT_WIDTH_MIN-`IN_WIDTH_MIN)*`DCIM_COL-1:0]  PSUM // reg -> wire
+);
+```
+
+![dcim](image-1.png)
 
 ## top
 
@@ -97,35 +134,18 @@ module top(
 );
 ```
 
-## dcim_ip_bm
+### 验证结果
 
-> designed through analog flow, unsynthesizable.
+![alt text](image-13.png)
 
-> 内部寄存器大小为256x528位，或（64x4）x（16x33）位，即64列4bit权重，33行尺寸为16的subarray。
+给到dcim ip的IFN为3333_dddd（即实际的input是cccc_2222）, dcim里存的权重全部为16{9999}，最后算出来的是64{9'b001101100},与期望值一样
 
-> 输出是单bit输入feature和4bit权重的按列累加和，没有时序上的累加。（时序上的累加需要在外部接一个shift accumulator）
+![alt text](image-14.png)
+给到dcim ip的IFN为3333_dddd（即实际的input是cccc_2222）, dcim里存的权重全部为16{bbbb}，最后算出来的是64{9'b010000100},与期望值一样
 
-### 接口
+![alt text](image-15.png)
+给到dcim ip的IFN为5555_4444（即实际的input是aaaa_bbbb）, dcim里存的权重全部为16{bbbb}，最后算出来的是64{9'b011011100},与期望值一样
 
-```verilog
-module  dcim_ip_bm(  //rstn,
-    input CLK, WEN, REN_GLOBAL, REN_LOCAL,
-    input   [1:0]  EMA_RSA,
-    input   [1:0]  EMA_RWL,
-    input   [`ADDR_WIDTH-1:0]      ADDR,
-    //input  rstn;  //for input bit shifter and shift-accumulator
-    input   [`EXP_WIDTH-1:0]       I_EXP,
-    output  [`EXP_WIDTH*`DCIM_COL/2-1:0]    O_EXP,
-    input   [`DCIM_COL-1:0]        MASK,
-    input   [`SIGN_CONFIG-1:0]     SIGN,
+![alt text](image-16.png)
+给到dcim ip的IFN为5555_4444（即实际的input是aaaa_bbbb）, dcim里存的权重全部为16{b4b4}，最后算出来的是32{{9'b011011100},{9'b001010000}},与期望值一样
 
-    input   [`MEM_WIDTH-1:0]       D,
-    output  [`MEM_WIDTH-1:0]       Q,
-    input   [`DCIM_ROW-1:0]        IFN,
-
-    output  [`EXP_WIDTH-1:0]       I_EXPDRV,
-    output  [`SIGN_CONFIG-1:0]     SIGNDRV,
-    output  [`DCIM_ROW-1:0]        IFNDRV,
-    output  [(`OUT_WIDTH_MIN-`IN_WIDTH_MIN)*`DCIM_COL-1:0]  PSUM // reg -> wire
-);
-```
