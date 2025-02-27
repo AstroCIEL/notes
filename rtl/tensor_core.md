@@ -1,34 +1,71 @@
 # tensor core
 
-> /TCORE_0929/
+> /TCORE_04/
 
-> /TCORE_0929/TCORE_rtl/rtl_sim/list.f
+> /TCORE_04/front_end_sim/rtl_sim/list.f
 
 ```text
-/../accum_buffer_rtl/psum_buffer.v
-/../accum_buffer_rtl/rf_hde_128bx128.v
-/../accum_buffer_rtl/psum_buffer_sc_ga.v
-/../accum_buffer_rtl/data_scatter.v
-/../accum_buffer_rtl/data_gather.v
-/../controller_rtl/rtl/accu_ctrl.v
-/../shift_accu_rtl/rtl/shift_accu.v
-/../shift_accu_rtl/rtl/sub_shift_accu.v
-/../shift_accu_rtl/rtl/multi_prec_add.v
-/rtl/TCORE_accu.v
+/rtl/dcim_ip_bm.v
+/rtl/quantizer.v
+/rtl/top.v
+/rtl/top_cim.v
+/rtl/input_collector.v
+/rtL/mini_controller.v
+/rtl/dcim_macro_32_bm.v
+/rtl/input_register.v
+/rtl/weight_collector.v
+/rtl/config_cim.v
+/rtl/output_fifo.v
+/rtl/top_bm.v
+/rtl/controller.v
+/rtl/cim_weight_collector.v
 ```
 
 ## 层次
 
 ```text
-TCORE_accu(TCORE_accu.v)
-    u_psum_buffer_sc_ga psum_buffer_sc_ga (psum_buffer_sc_ga.v)
-        u_psum_buffer psum_buffer (psum_buffer.v)
-            regfile rf_hde_128bx128 (rf_hde_128bx128.v)
-        u_data_scatter data_scatter (data_scatter.v)
-        u_data_gather data_gather (data_gather.v)
-    u_accu_ctrl accu_ctrl (accu_ctrl.v)
-    u_shift_accu shift_accu (shift_accu.v)
-        u_sub_shift_accu sub_shift_accu (sub_shift_accu.v)(16)
-            multi_prec_add1 multi_prec_add (multi_prec_add.v)
+top(top.v)
+    config_cim_inst config_cim(config_cim.v)
+    config_instruction_inst config_cim (config_cim.v)
+    config_addr_inst config_cim(config_cim.v)
+    top_cim_inst top_cim (top_cim.v)
+        mini_controller_inst mini_controller(mini_controller.v)
+        weight_collector_inst0~1 weight_collector (weight_collector.v)(2)
+        input_collector_inst0~1 input_collector(input_collector.v)(2)
+        cim_weight_collector_inst0~3 cim_weight_collector(cim_weight_collector.v)(4)
+        input_register0~1 input_register(input_register.v)(2)
+        top_bm_inst_0~3 top_bm(top_bm.v)(4)
+            controller_inst controller(controller.v)
+            dcim_macro_32_bm_inst dcim_macro_32_bm(dcim_macro_32_bm.v)
+                dcim_ip_bm_inst dcim_ip_bm(dcim_ip_bm.v)(HARD MACRO)
+                quantizer_inst quantizer(quantizer.v)
+                output_fifo_inst output_fifo(output_fifo.v)
+                shift_acc_block[0:15].shift_acc_0~3:shift_accumulator(dcim_macro_32_bm.v)
 ```
 
+## top
+
+### 接口
+
+```verilog
+module top(
+    input                       clk,
+    input                       tck,
+    input                       rstn,
+    input                       instruction_valid,//save instruction
+    input                       load_start,
+    input                       mode,
+    input                       quant_enable,
+
+    input                       out_sel,
+    input                       out_load,
+    input                       out_sc_en,
+    input                       out_tdi,
+    output                      out_tdo,
+
+    input [2:0]                 config_sel,
+    input                       config_sc_en,
+    input                       config_tdi,
+    output                      config_tdo
+);
+```

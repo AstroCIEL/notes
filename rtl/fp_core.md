@@ -1,5 +1,7 @@
 # FP Core
 
+## 文件路径
+
 > /fp_core_review/rtl/
 
 > /fp_core_review/front_end_sim/list.f
@@ -65,9 +67,9 @@ top(top.v)
 - mini_controller.v
   > mini_controller instruction里的都是不带cim_前缀的，例如ren，wen。然后通过instruction_valid来将instruction里的这些信号锁存，得到状态机的转换目标；然后在load_start有效时（时钟上升沿）允许状态转换（因此其实状态转换的目标只取决于load_start前一次instruction_valid时的instruction，因为它已经被锁存。）。状态机输出逻辑是根据状态输出cim_前缀的信号，例如cim_ren, cim_wen等等，这些输出信号会输入到dcim ip里。
 
-  > 第一组状态机：REN_GLOBAL, REN_LOCAL, WEN_LOCAL之类的。当处于IDLE状态时，当load_start拉高的时候，状态才开始转换。在状态没有带LOOP的情况下，cnt达到instructin里给出的cnt上限就变回IDLE。如果是带LOOP的，则只要loop信号有效，就一直继续状态，不回到IDLE。因此如果进入LOOP状态，想要回到IDLE，必须让instruction valid一次来让所有信号归零，从而回到IDLE。
+  > 第一组状态机state_debug：S_REN_GLOBAL, S_REN_LOCAL, S_WEN之类的。当处于IDLE状态时，当load_start拉高的时候，状态才开始转换。在状态没有带LOOP的情况下，cnt达到instruction里给出的cnt上限就变回IDLE。如果是带LOOP的，则只要loop信号有效，就一直继续状态，不回到IDLE。因此如果进入LOOP状态，想要回到IDLE，必须让instruction valid一次来让所有信号归零，从而回到IDLE。
 
-  > 第二组状态机：SCEN，SCEN_LOOP。该状态下输出的是cim_cen有效。cim_cen将输入到input_collector, 在有效时，q以LENGTH为单位进行移位，并行输出高LENGTH位msbs。
+  > 第二组状态机state_cen：S_CEN，S_CEN_LOOP。该状态下输出的是cim_cen有效。cim_cen将输入到input_collector, 在有效时，q以LENGTH为单位进行移位，并行输出高LENGTH位msbs。
 - weight_collector.v
   > weight_collector 顺序输入的寄存器so, 每次输入新的lsb，寄存器向高位移位；接受so并行输出load的寄存器q，并且可以以LENGTH位单位进行移位，并行输出LENGTH长度的msbs
 - config_cim.v
@@ -84,7 +86,7 @@ top(top.v)
 
 该模块由于可配置的数制很多，而且输入输出需要转换数值，模块实际的输入输出为二进制，核对和计算比较麻烦，因此考虑使用uvm进行全面的验证。该uvm是公司的黎孟宇老师编写的，简单来说其原理如下：
 
-![UVM](image-22.png)
+![uvm](image-24.png)
 
 验证结果类似下图
 
@@ -109,6 +111,8 @@ top(top.v)
 
 ## top_cim
 
+在可以进行浮点mvm的模块`top_bm`的外围加上input、weight、psum的扫描链，从而可以配置mvm模块的输入并读取输出。
+
 ### 图例
 
 ![top_cim](image-21.png)
@@ -119,7 +123,15 @@ top(top.v)
 
 ![top_cim](image-23.png)
 
+psum的扫描链可以正常输出
 
+![input_sc](image-25.png)
+
+input扫描链也可以正确地读入，例如读入串行数据{16{{4{4'b1100}},{4{4'b0010}}}}并行输出16{cccc_2222}
+
+![weight_sc](image-26.png)
+
+weight扫描链也可以正常读入，例如读入串行数据{8{{4{4'b0011}},{4{4'b1101}}}}并行输出{8{9999}，8{7777}}
 
 ## top
 
@@ -148,10 +160,12 @@ module top(
 
 ### 验证
 
+在top_cim正确的基础上，再验证top_cim外的扫描链都正常工作即可。
 
+![instruction](image-27.png)
 
+例如希望下一个状态是S_REN_LOCAL，则instruction值为2000_0000，instruction扫描链可以正常写入，并且可以看到在load_start有效后，状态机状态成功转化到S_REN_LOCAL。
 
+![cim_config](image-28.png)
 
-
-
-
+cim_config的扫描链可以正常写入，例如在cim_mask_en为64{1'b1}时而其他相关参数都为0时，cim_config扫描链输出ffff_ffff_ffff_ffff_0000.
