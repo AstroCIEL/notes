@@ -44,6 +44,10 @@ ip可以同时计算和写，因为在计算前会把要算的那些行锁存起
 
 ![ipcore](image-12.png)
 
+- 输入：`config_cim`, `config_addr`, `config_instruction`, `config_exp`, `weight_collector`, `input_collector`都是我们可以配置的寄存器，配置的方式是通过扫描链串行输入，并行输出。
+- 输出：`psum_collector`, `cim_weight_collector`是并行输入，串行输出的扫描链，用于将内层的ip输出的数据存起来，串行输出，方便我们观测。
+- 自检：`mbist_a_g`模块可以自动顺序生成控制ip为不同模式的控制信号，以及相应的地址和数据，给到ip后，再通过`mbist_comp`模块比对期望的数据和ip的输出是不是一样。
+
 ## rtl文件
 
 - top.v
