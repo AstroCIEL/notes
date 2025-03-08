@@ -4,14 +4,14 @@
 
 ## 层次
 
-```text
-IO_TOP(IO_TOP.v)
-    config_dco_inst config_cim(config_cim.v)
-    DCO_inst DCO(HARD MACRO)
-    fp_core_inst0 fp_core(HARD MACRO)
-    ip_core_inst1 ip_core(HARD MACRO)
-    multi_core_inst multi_core(HARD MACRO)
-```
+- IO_TOP(IO_TOP.v)
+  - config_dco_inst config_cim(config_cim.v)
+  - DCO_inst [DCO](/rtl/DCO.md)
+  - fp_core_inst0 [fp_core](/rtl/fp_core.md)
+  - ip_core_inst1 [ip_core](/rtl/ip_core.md)
+  - multi_core_inst [multi_core](/rtl/tensor_core.md)
+
+> multi core就是指tensor core。因为tensor core里例化了多个dcim ip，因此可以进行gemm。
 
 ![iotop](image-7.png)
 
