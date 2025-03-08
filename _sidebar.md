@@ -8,9 +8,9 @@
   - [design compiler](/frontend/design_compiler_synthesis.md)
 
 - 后端
-  - [Innovus](/backend/innovus_procedure.md)
+  - [Innovus](/backend/innovus.md)
   - [SramCompiler](/backend/sram_compiler.md)
-  - [lvl](/backend/lvl.md)
+  - [Calibre](/backend/calibre.md)
 
 - RTL
   - [ip_core](/rtl/ip_core.md)

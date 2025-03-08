@@ -1,6 +1,8 @@
-# lvl 版图比对
+# Calibredrv
 
-## 命令行形式
+## lvl 版图比对
+
+### 命令行形式
 
 ```bash
 # define source and target
@@ -18,7 +20,7 @@ calibre -drc -hier -turbo -turbo_all -64 -hyper -fx xor.rules
 
 然后在当前目录下会生成一个xor.rules.gds文件，可以通过virtuoso或者calibredrv等工具查看版图比对结果
 
-## 图形界面形式
+### 图形界面形式
 
 1. 首先用calibredrv打开任意一个gds版图文件
 
@@ -29,6 +31,8 @@ b calibredrv
 set gdsfile "/work/home/rhxu/I0_TOP_final.gds"
 set L [ layout create $gdsfile -dt_expand -preservePaths -preserveTextAttributes -preserveProperties]
 ```
+
+也可以在virtuoso的选项卡打开Calibre。注意可能需要在工作目录下加一个cds.init文件才可以让calibre选项显示。
 
 2. 打开nmDRC界面
 
