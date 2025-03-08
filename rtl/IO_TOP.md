@@ -2,6 +2,18 @@
 
 > /IO_TOP/
 
+## 特征概述
+
+- 总共三个计算模块（ip core，fp core，tensor core），共用一套顶层IO以及一个DCO产生的时钟信号。顶层可以通过片选信号来选择使用 哪一个计算模块。
+- 片上数字逻辑可以使用DCO产生的时钟，也可以使用芯片外灌时钟
+- 各计算模块内部，在dcim ip macro外围通过扫描链来配置输入寄存器（串行输入并行输出给到ip），同样通过扫描链来收集ip输出的数据（并行输入ip算出的数据然后串行输出到顶层io）
+
+### 各计算模块概述
+
+- ip core：验证dcim_core (IN1b-W4b-O9b 矩阵-向量乘)是否正常工作；配有mbist自检电路，可自检SRAM读写功能
+- fp core：在dcim_core的基础上，加入移位累加、PSUM后处理、指数对齐、输出格式转换等完整外围电路，支持多种定点/浮点数据格式(INT4,INT8,INT12,INT16,FP16,BF16,BBF16,FP8_E4M3, FP8_E5M2)的矩阵-向量乘计算，输出数据格式为INT32/FP32
+- tensor core：由2x2个INT-DCIM ENGINE组成，可配置为执行通用矩阵-矩阵乘法。
+
 ## 层次
 
 - IO_TOP(IO_TOP.v)
@@ -14,10 +26,9 @@
 > multi core就是指tensor core。因为tensor core里例化了多个dcim ip，因此可以进行gemm。
 
 ![iotop](image-7.png)
+![dco](DCO2.jpg)
 
-## top
-
-### 接口
+## 接口
 
 ```verilog
 module IO_TOP
@@ -67,10 +78,7 @@ module IO_TOP
 );
 ```
 
-### 图例
 
-![dco](DCO2.jpg)
+## layout
 
-### layout（上一版）
-
-![layout](image-3.png)
+![layout](image-29.png)
