@@ -13,11 +13,10 @@
   - [Calibre](/backend/calibre.md)
 
 - RTL
+  - [IO_TOP](/rtl/IO_TOP.md)
   - [ip_core](/rtl/ip_core.md)
   - [fp_core](/rtl/fp_core.md)
   - [tensor_core](/rtl/tensor_core.md)
-  - [IO_TOP](/rtl/IO_TOP.md)
-  - [chip_top](/rtl/chip_top.md)
   - [DCO](/rtl/DCO.md)
 
 - BASIC
