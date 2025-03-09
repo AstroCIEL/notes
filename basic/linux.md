@@ -33,16 +33,31 @@ find . -type f -name "*to_be_found*" -exec rm {} \;
 find . -type f -name "*to_be_found*" -exec rm -i {} \;
 ```
 
-## zip
+## `zip`
 
 ```bash
 zip -r dir.zip dir
 unzip filename.zip -d filedir
 ```
 
-## tar
+## `tar`
 
 ```bash
-tar -zcvf [文件名].tar.gz [文件目录] #打包成.gz文件
-tar -zxvf [文件名].tar.gz -C [文件目录] #解压.gz文件到指定目录
+tar -zcvf [file_name].tar.gz [dir] #打包成.gz文件
+tar -zxvf [file_name].tar.gz -C [dir] #解压.gz文件到指定目录
+```
+
+## `gzip`
+
+```bash
+gzip [file_name] #压缩文件
+gzip -d [file_name].gz #解压文件
+```
+
+## check storage usage using `du`
+
+```bash
+du -sh [dir] #查看dir的总大小
+
+du -h --max-depth=1 [dir] #查看dir下各个子目录的大小
 ```
