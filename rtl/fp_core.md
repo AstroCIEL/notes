@@ -1,10 +1,16 @@
 # FP Core
 
+## 特征概述
+
+fp_core和ip_cored的层次非常相似，在不考虑自检测模块的情况下，相当于就是把ip_core最里面调用的只能进行整数运算、没有时序累加的ip替换成了一个带浮点处理、可以浮点运算的模块top_bm。现在top_bm通过uvm验证后可以认为这是一个跟ip类似的计算模块。
+
+## 架构图
+
+![top](image-17.png)
+
 ## 文件路径
 
-> /fp_core_review/rtl/
-
-> /fp_core_review/front_end_sim/list.f
+> /work/home/rhxu/SMIC2025/fp_core_review/
 
 ```text
 /rtl/format_conversion.v
@@ -25,7 +31,7 @@
 /rtl/dcim_ip_bm.v
 ```
 
-## 层次
+## RTL层次
 
 ```text
 top(top.v)
@@ -50,13 +56,9 @@ top(top.v)
                     shift_acc_block[0:15].shift_acc_0~3:shift_accumulator(dcim_macro_32_bm.v)
 ```
 
-![top](image-17.png)
-
-从图例可以发现，其实fp_core和ip_cored的层次非常相似，在不考虑自检测模块的情况下，相当于就是把ip_core最里面调用的只能进行整数运算、没有时序累加的ip替换成了一个带浮点处理、可以浮点运算的模块top_bm。现在top_bm通过uvm验证后可以认为这是一个跟ip类似的计算模块。
-
 > top_bm的图例在下面。
 
-## rtl文件
+### rtl模块功能说明
 
 - top.v
 - psum_collector.v
@@ -76,7 +78,67 @@ top(top.v)
   > config_cim 顺序输入，并行输出的寄存器。每次输入新的lsb，寄存器向高位移位
 - cim_weight_collector.v
 
-## top_bm
+## 接口
+
+|方向|信号名|描述|
+|---|---|---|
+|input |  clk              | 片上数字逻辑时钟  |
+|input |  tck              | 用于配置扫描链寄存器的时钟信号  |
+|input |  rstn             | 片上数字逻辑复位信号  |
+|input |  instruction_valid| 来将instruction扫描链寄存器里的数据锁存，得到状态机的转换目标  |
+|input |  load_start       | 在有效时允许状态开始根据上一次锁存的有效instruction进行转换  |
+|input |  out_sel          | 选择输出psum或者cim weight  |
+|input |  out_load         | 控制psum或者cim weight的扫描链寄存器加载psum或者cim weight的并行输入信号  |
+|input |  out_sc_en        | 用于控制psum或者cim weight的配置扫描链寄存器开始扫描输入的使能信号  |
+|input |  out_tdi          | 用于移位psum或者cim weight的配置扫描链寄存器的串行输入信号  |
+|output|  out_tdo          | psum或者cim weight的配置扫描链寄存器的移位时串行输出信号  |
+|input |  en_load          | 允许收集了串行输入的input或者weight的寄存器并行加载到buffer上  |
+|input |  [2:0] config_sel | 不同的值代表不同的模式，在不同模式下激活相关的信号  |
+|input |  config_sc_en     | 用于控制core内各种配置扫描链寄存器开始扫描输入的使能信号  |
+|input |  config_tdi       | 用于配置core内各种配置扫描链寄存器的串行输入信号  |
+|output|  config_tdo       | core内各种配置扫描链寄存器的移位时串行输出信号  |
+
+### 验证
+
+在top_cim正确的基础上，再验证top_cim外的扫描链都正常工作即可。
+
+![instruction](image-27.png)
+
+例如希望下一个状态是S_REN_LOCAL，则instruction值为2000_0000，instruction扫描链可以正常写入，并且可以看到在load_start有效后，状态机状态成功转化到S_REN_LOCAL。
+
+![cim_config](image-28.png)
+
+cim_config的扫描链可以正常写入，例如在cim_mask_en为64{1'b1}时而其他相关参数都为0时，cim_config扫描链输出ffff_ffff_ffff_ffff_0000.
+
+## appendix：top_cim
+
+在可以进行浮点mvm的模块`top_bm`的外围加上input、weight、psum的扫描链，从而可以配置mvm模块的输入并读取输出。
+
+### 图例
+
+![top_cim](image-21.png)
+
+### 验证
+
+由于最核心的`top_bm`模块已经通过uvm验证了，在浮点计算的情况下有可以容忍的误差。因此对于调用`top_bm`的顶层模块`top_cim`来说，只要保证控制信号以及扫描链可以正常写入就没问题了。
+
+![top_cim](image-23.png)
+
+psum的扫描链可以正常输出
+
+![input_sc](image-25.png)
+
+input扫描链也可以正确地读入，例如读入串行数据{16{{4{4'b1100}},{4{4'b0010}}}}并行输出16{cccc_2222}
+
+![weight_sc](image-26.png)
+
+weight扫描链也可以正常读入，例如读入串行数据{8{{4{4'b0011}},{4{4'b1101}}}}并行输出{8{9999}，8{7777}}
+
+## appendix：top_bm
+
+### 功能描述
+
+可以进行多种数制的向量矩阵乘计算模块。
 
 ### 图例
 
@@ -108,64 +170,3 @@ top(top.v)
 | BBF16       | -0.39| -0.06| 0.07  | 0.01 | -0.87| 0.15  | -0.5  |
 | FP8E4       | 0.67 | -0.07| 0.73  | 0.56 | -0.22| 0.34  | -0.33 |
 | FP8E5       | 0.49 | -0.18| -0.32 | -0.63| 0.47 | 0.013 | 0.04  |
-
-## top_cim
-
-在可以进行浮点mvm的模块`top_bm`的外围加上input、weight、psum的扫描链，从而可以配置mvm模块的输入并读取输出。
-
-### 图例
-
-![top_cim](image-21.png)
-
-### 验证
-
-由于最核心的`top_bm`模块已经通过uvm验证了，在浮点计算的情况下有可以容忍的误差。因此对于调用`top_bm`的顶层模块`top_cim`来说，只要保证控制信号以及扫描链可以正常写入就没问题了。
-
-![top_cim](image-23.png)
-
-psum的扫描链可以正常输出
-
-![input_sc](image-25.png)
-
-input扫描链也可以正确地读入，例如读入串行数据{16{{4{4'b1100}},{4{4'b0010}}}}并行输出16{cccc_2222}
-
-![weight_sc](image-26.png)
-
-weight扫描链也可以正常读入，例如读入串行数据{8{{4{4'b0011}},{4{4'b1101}}}}并行输出{8{9999}，8{7777}}
-
-## top
-
-### 接口
-
-```verilog
-module top(
-    input                       clk,
-    input                       tck,
-    input                       rstn,
-    input                       instruction_valid,//save instruction
-    input                       load_start,
-
-    input                       out_sel,
-    input                       out_load,
-    input                       out_sc_en,
-    input                       out_tdi,
-    output                      out_tdo,
-
-    input [2:0]                 config_sel,
-    input                       config_sc_en,
-    input                       config_tdi,
-    output                      config_tdo,
-);
-```
-
-### 验证
-
-在top_cim正确的基础上，再验证top_cim外的扫描链都正常工作即可。
-
-![instruction](image-27.png)
-
-例如希望下一个状态是S_REN_LOCAL，则instruction值为2000_0000，instruction扫描链可以正常写入，并且可以看到在load_start有效后，状态机状态成功转化到S_REN_LOCAL。
-
-![cim_config](image-28.png)
-
-cim_config的扫描链可以正常写入，例如在cim_mask_en为64{1'b1}时而其他相关参数都为0时，cim_config扫描链输出ffff_ffff_ffff_ffff_0000.
