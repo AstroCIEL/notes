@@ -10,7 +10,7 @@
 - 后端
   - [Innovus](/backend/innovus.md)
   - [SramCompiler](/backend/sram_compiler.md)
-  - [Calibre](/backend/calibre.md)
+  - [Calibre](/backend/calibredrv.md)
 
 - RTL
   - [IO_TOP](/rtl/IO_TOP.md)

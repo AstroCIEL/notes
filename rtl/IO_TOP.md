@@ -46,8 +46,8 @@
 |input| OUT_LOAD           | ip/fp core  |  控制psum或者cim weight的扫描链寄存器加载psum或者cim weight的并行输入信号 |
 |input| OUT_SC_EN          | ip/fp core  |  用于控制psum或者cim weight的配置扫描链寄存器开始扫描输入的使能信号 |
 |input| OUT_TDI            | ip/fp core  |  用于移位psum或者cim weight的配置扫描链寄存器的串行输入信号 |
-|input| MBIST_TEST_H       | ip core     |  用于控制ip core的mbist自检SRAM读写功能 |
-|input| MBIST_RESET_L      | ip core     |  用于控制ip core的mbist自检SRAM读写功能 |
+|input| MBIST_TEST_H       | ip core     |  有效时进入ip core的mbist自检SRAM读写功能 |
+|input| MBIST_RESET_L      | ip core     |  mbist自检控制模块的复位信号 |
 |input| EN_LOAD            | ip/fp core  |  允许收集了串行输入的input或者weight的寄存器并行加载到buffer上 |
 |input| [2:0] CONFIG_SEL   | ip/fp core  |  不同的值代表不同的模式，在不同模式下激活相关的信号 |
 |input| CONFIG_SC_EN       | ip/fp core  |  用于控制core内各种配置扫描链寄存器开始扫描输入的使能信号 |
@@ -70,7 +70,7 @@
 |output| OUT_TDO_R         | tensor core |  psum或者cim weight的配置扫描链寄存器的移位时串行输出信号 |
 |output| CONFIG_TDO        | ip/fp core  |  core内各种配置扫描链寄存器的移位时串行输出信号 |
 |output| CONFIG_TDO_R      | tensor core |  core内各种配置扫描链寄存器的移位时串行输出信号 |
-|output| MBIST_FAIL        | ip core     |  指示mbist自检是否成功 |
+|output| MBIST_FAIL        | ip core     |  指示mbist自检是否成功，如果一直为0，则无误 |
 |output| MBIST_DONE        | ip core     |  指示mbist自检是否完成 |
 |output| DCO_CLK_DIV       | DCO         |  DCO输出的片上时钟信号经过32分频后的输出 |
 |output| DCO_TDO           | DCO         |  DCO配置扫描链寄存器的串行输出 |
