@@ -26,4 +26,5 @@
   - [bash](/basic/linux.md)
   - [makefile](/basic/makefile.md)
   - [smic28HKD](/basic/smic28HKD.md)
+  - [EDA](/basic/eda.md)
 <!-- 以下略 -->
