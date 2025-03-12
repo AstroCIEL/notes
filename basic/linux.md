@@ -50,7 +50,9 @@ tar -zxvf [file_name].tar.gz -C [dir] #解压.gz文件到指定目录
 ## `gzip`
 
 ```bash
-gzip [file_name] #压缩文件
+gzip [file_name] #压缩文件，但是会删除原文件
+gzip -c [file_name] > [file_name].gz #压缩文件，保留原文件
+
 gzip -d [file_name].gz #解压文件
 ```
 
@@ -60,4 +62,18 @@ gzip -d [file_name].gz #解压文件
 du -sh [dir] #查看dir的总大小
 
 du -h --max-depth=1 [dir] #查看dir下各个子目录的大小
+```
+
+## manage soft link of directory using `ln`
+
+```bash
+# wherever you are
+ln -s source/dir/a target/dir/b #创建软链接
+
+# if you're currently in the dir of the target dir
+ln -s /source/dir/a b # 在当前目录下创建一个软链接b
+ln -s source/dir/a # 缺省目标文件夹名称，在当前目录下创建一个同名软链接a
+
+# if you want to delete the link
+rm b #删除软链接b
 ```
