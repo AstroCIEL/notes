@@ -78,3 +78,18 @@ ln -s source/dir/a # 缺省目标文件夹名称，在当前目录下创建一�
 # if you want to delete the link
 rm b #删除软链接b
 ```
+
+## `tmux`
+
+```bash
+tmux new -s <session-name>
+
+tmux detach # or ctrl+b, d
+
+tmux ls # list all sessions
+
+tmux attach -t <session-name> # attach to a session
+
+tmux kill-session -t <session-name>
+```
+
