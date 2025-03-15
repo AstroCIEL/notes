@@ -62,6 +62,7 @@ gzip -d [file_name].gz #解压文件
 du -sh [dir] #查看dir的总大小
 
 du -h --max-depth=1 [dir] #查看dir下各个子目录的大小
+du -h -d 1 [dir] #--max-depth简写-d
 ```
 
 ## manage soft link of directory using `ln`
