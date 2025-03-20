@@ -82,6 +82,8 @@ rm b #删除软链接b
 ## `tmux`
 
 ```bash
+sudo apt-get install tmux
+
 tmux new -s <session-name>
 
 tmux detach # or ctrl+b, d
@@ -93,3 +95,12 @@ tmux attach -t <session-name> # attach to a session
 tmux kill-session -t <session-name>
 ```
 
+## `conda`常用命令
+
+```bash
+conda create --name <env_name> python=<version>
+
+conda env list
+
+conda env remove --name <env_name>
+```
