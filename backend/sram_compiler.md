@@ -23,7 +23,7 @@ work/home/wumeng/SMIC28HKD_22ULP_INSTALL/SMIC22HKD_22ULP/IP/Sram compiler/
 - 对于tsmc22，在终端输入这个可执行文件的路径，就可以打开sram compiler图形界面
 - 对于smic22，进入上述文件夹，可以看到A001和A000两个文件夹（或压缩包）。A001是2024三月发布的，A000是2023十一月发布的。进入任意一个文件夹（例如A000），有两个文件夹（或压缩包），一个是FE，一个是FB。将它们解压（如果还没解压的话）。FB里面是提供了gds的生成库，需要复制到FE的文件夹里面。然后再以和TSMC22nm相似的启动方式打开FE文件夹里的sram_sp_hde_svt_mvt,启动后，可以看到sram compiler的GUI如下页：
 
-![sram_compiler](image.png)
+![sram_compiler](images/image.png)
 
 > 为什么会有FB和FE两个文件夹？可以理解为厂商提供sram compiler是将生成不同view的功能分割开来的，例如给你一个压缩包，里面有可以打开图形界面的可执行文件，但是这个压缩包里面只给你提供了几个可以生成特定几个view的库，这样虽然你可以打开sram compiler图形界面，但是生成view的功能是不齐全的。所以现在给了两个压缩包，里面提供了不同的view生成所需的库文件，所以需要将两个压缩包的文件融合起来，并且还需要增改一些库文件的声明，这样最后打开的图形界面就有齐全的view生成功能。
 
@@ -36,17 +36,17 @@ work/home/wumeng/SMIC28HKD_22ULP_INSTALL/SMIC22HKD_22ULP/IP/Sram compiler/
 - Bits：SRAM port的宽度，即一次读出的数据宽度
 - Multiplier Width，Number of Banks: 不会影响SRAM容量，但会影响物理实现方式（包括长度、宽度）。通常对特别小或者特别大容量的SRAM需要更改这两个参数，才能物理产生SRAM。
 
-![sram_compiler2](image-2.png)
+![sram_compiler2](images/image-2.png)
 
 ## 产生版图文件（GDSII）并导入virtuoso
 
 - 在sram compiler的导出view中选择GDSII格式，导出的GDSII文件即为版图文件。
 - 在virtuoso菜单栏中 file-import-stream ,流文件导入：
-  ![virtuoso](image-3.png)
+  ![virtuoso](images/image-3.png)
 - stream file 选择需要导入的GDS文件, library 可输入新库的名字 或者选择导入已有库中
-  ![virtuoso2](image-4.png)
+  ![virtuoso2](images/image-4.png)
 - 导入后，会在导入的目标库中产生很多个layout文件，都是sram的不同层级的（子）模块。其中，与GDSII文件同名的文件是顶层模块。如果想要知道模块层次，可以打开顶层模块的layout，然后按shift+F显示细节，再按shift+T显示树结构，即可得到模块层次。
-  ![tree](image-5.png)
+  ![tree](images/image-5.png)
 
 ## SRAM的RTL功能仿真
 
@@ -55,7 +55,7 @@ work/home/wumeng/SMIC28HKD_22ULP_INSTALL/SMIC22HKD_22ULP/IP/Sram compiler/
 关于SRAM的架构可以参考手册：`work/home/tyiia/common/TSMC_22NM_ULL/sram_sp_hde_svt_mvt/rlp0/doc/sram_sp_hde_svt_mvt_userguide.pdf`
 
 以下是常见SRAM的ports 和读写时序：
-![ports](image-6.png)
+![ports](images/image-6.png)
 以下是对各个端口的简要解释，具体参见手册：
 - CLK：SRAM的时钟，上升沿触发
 - CEN：chip enable，通常置于0，SRAM才能工作
@@ -70,10 +70,10 @@ work/home/wumeng/SMIC28HKD_22ULP_INSTALL/SMIC22HKD_22ULP/IP/Sram compiler/
 > 再次强调: VDD*, VSS*, EMA*, RET*, STOV这些pin通常容易被忽略，但一定要确保接好，不能floating，不然流片后SRAM不会工作！
 
 GWEN=1，读数据。读出的数据Q是在ADDR的下一个cycle出现的
-![gwne1](image-7.png)
+![gwne1](images/image-7.png)
 
 GWEN=0，写数据。数据D是在ADDR的下一个cycle写入的
-![gwen0](image-8.png)
+![gwen0](images/image-8.png)
 
 ### SRAM的仿真
 具体例子参见（可以拷贝到自己的路径，尝试类似的仿真）`work/home/tyiia/common/example/sram_22nm`.
@@ -85,7 +85,7 @@ GWEN=0，写数据。数据D是在ADDR的下一个cycle写入的
 1.	进入tb文件夹， 查看testbench: mem_tb.v
 2.	运行命令：b make compile，会出现以下时序操作
 
-![alt text](image-9.png)
+![alt text](images/image-9.png)
 
 此仿真仅验证了简单的读写操作，可根据具体需要修改mem_tb。
 并不是所以的EMA*, STOV, RET设置都能进行仿真，参考mem_tb中的设置。

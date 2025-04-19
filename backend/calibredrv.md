@@ -58,7 +58,7 @@ calibredrv xor.rules.gds
 
 在图形界面可以通过导入drc文件来显示layer的名称
 
-![drc](9fec4a11c667145ee0566f3f4c0d914.png)
+![drc](images/9fec4a11c667145ee0566f3f4c0d914.png)
 
 ### 图形界面形式
 
@@ -76,17 +76,17 @@ set L [ layout create $gdsfile -dt_expand -preservePaths -preserveTextAttributes
 
 #### 2. 打开nmDRC界面
 
-![drc](image-10.png)
+![drc](images/image-10.png)
 
 #### 3. 选择fast xor
 
-![xor](image-11.png)
+![xor](images/image-11.png)
 
 #### 4. 填写两个需要比对的layout gds和top cell名称,记得勾选生成xor rules文件
 
-![gds](image-12.png)
-![top](image-13.png)
-![xorrules](image-14.png)
+![gds](images/image-12.png)
+![top](images/image-13.png)
+![xorrules](images/image-14.png)
 
 #### 5. Run DRC并在RVE中查看结果
 

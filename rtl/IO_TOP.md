@@ -25,8 +25,8 @@
 
 > multi core就是指tensor core。因为tensor core里例化了多个dcim ip，因此可以进行gemm。
 
-![iotop](image-7.png)
-![dco](DCO2.jpg)
+![iotop](images/image-7.png)
+![dco](images/DCO2.jpg)
 
 ## 接口
 
@@ -95,4 +95,4 @@ Ip core和fp core在同一时间只能使用其中一个，因为他们的控制
 
 ## layout
 
-![layout](image-29.png)
+![layout](images/image-29.png)

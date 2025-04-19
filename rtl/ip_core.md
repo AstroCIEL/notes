@@ -10,7 +10,7 @@
 
 ## 架构图
 
-![ipcore](image-12.png)
+![ipcore](images/image-12.png)
 
 ## 文件路径
 
@@ -101,17 +101,17 @@ top(top.v)
 
 ## 验证结果
 
-![alt text](image-13.png)
+![alt text](images/image-13.png)
 
 给到dcim ip的IFN为3333_dddd（即实际的input是cccc_2222）, dcim里存的权重全部为16{9999}，最后算出来的是64{9'b001101100},与期望值一样
 
-![alt text](image-14.png)
+![alt text](images/image-14.png)
 给到dcim ip的IFN为3333_dddd（即实际的input是cccc_2222）, dcim里存的权重全部为16{bbbb}，最后算出来的是64{9'b010000100},与期望值一样
 
-![alt text](image-15.png)
+![alt text](images/image-15.png)
 给到dcim ip的IFN为5555_4444（即实际的input是aaaa_bbbb）, dcim里存的权重全部为16{bbbb}，最后算出来的是64{9'b011011100},与期望值一样
 
-![alt text](image-16.png)
+![alt text](images/image-16.png)
 给到dcim ip的IFN为5555_4444（即实际的input是aaaa_bbbb）, dcim里存的权重全部为16{b4b4}，最后算出来的是32{{9'b011011100},{9'b001010000}},与期望值一样
 
 
@@ -210,7 +210,7 @@ module  dcim_ip_bm(  //rstn,
 
 ### 数据流架构图
 
-![dcim](image-1.png)
+![dcim](images/image-1.png)
 
 
 

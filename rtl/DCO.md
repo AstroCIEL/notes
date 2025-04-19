@@ -21,11 +21,11 @@ DCO可以独立使用，作为片上时钟的的产生模块。其输入都是�
 
 > 这里介绍的DCO是基于贾老师设计的tsmc22的DCO修改而来。贾老师的原文件在`/project/work/home/tyiia/common/example/tsmc22nm/DCO 22nm`
 
-![dco](image-4.png)
+![dco](images/image-4.png)
 
 此次修改后的DCO基于smic22工艺。文件位置在`/work/home/rhxu/DCO_smic/`.
 
-![DCO1](DCO1.png)
+![DCO1](images/DCO1.png)
 
 | pin       | in/out   |description                        |
 |-----------|----------|-----------------------------------|
@@ -47,7 +47,7 @@ DCO ring产生的时钟又可以与外部时钟（EXT_CLK）二选一输出，�
 
 > 修改sel配置后可能需要用RSTN复位后才能正常产生时钟信号。
 
-![DCO2](DCO2.jpg)
+![DCO2](images/DCO2.jpg)
 
 以上是与顶层IO相连的部分以及与顶层模块的关系。需要注意的是，在顶层中，将FREQ_SEL和DIV_SEL设置为相等，也就是用于测试的CLK_DIV和用于片上数字逻辑的CLK是永远相同的。
 
@@ -106,15 +106,15 @@ end
 
 ### 仿真结果
 
-![extclk](image-8.png)
+![extclk](images/image-8.png)
 
 当clk_sel为1的时候，DCO输出外灌时钟信号，确认与原外灌时钟频率一致。
 
-![cc_sel=0](image-9.png)
+![cc_sel=0](images/image-9.png)
 
 当clk_sel为0，cc_sel为00的时候，DCO ring输出的频率是最高的，并且freq_sel为0，即没有继续分频，因此这是dco可以输出的最高频，在仿真中可以达到716.332MHz。但是根据经验，在实际测试的时候频率会比仿真的时候低。
 
-![div](image-10.png)
+![div](images/image-10.png)
 
 当FREQ_SEL为0的时候1分频，为1是2分频，为3是四分频。可见分频功能也是正常的。
 

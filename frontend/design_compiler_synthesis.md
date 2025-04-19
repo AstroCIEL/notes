@@ -13,7 +13,7 @@
 - 优化（Optimization）：根据工作频率、面积、功耗来对电路优化，来推断出满足设计指标要求(sdc约束)的门级网表；
 - 映射（Mapping）：将门级网表映射到晶圆厂给定的工艺库上，最终形成该工艺库对应的门级网表。优化和映射可以合称为编译（compile）。
 
-![流程](v2-5318012f149345d562cfa255c6034d94_r.jpg)
+![流程](images/v2-5318012f149345d562cfa255c6034d94_r.jpg)
 
 DC在综合过程中会把电路划分为以下处理对象：
 
@@ -26,13 +26,13 @@ DC在综合过程中会把电路划分为以下处理对象：
 - Clock：A timing reference object in DC memory whichdescribes a waveform for timing analysis
 - Library：A collection of cells and their associated metadata
 
-![objects](image-3.png)
+![objects](images/image-3.png)
 
-![对象](v2-d656d11449c1cce5dfea71318b5d37fc_r.jpg)
+![对象](images/v2-d656d11449c1cce5dfea71318b5d37fc_r.jpg)
 
 一个完整的顶层模块可以分为这几个部分：
 
-![top](image-23.png)
+![top](images/image-23.png)
 
 上图是一个芯片的顶层设计，可以看到它被分层了两个层次：
 
@@ -46,7 +46,7 @@ DC在综合过程中会把电路划分为以下处理对象：
 
 ## 流程
 
-![process](1110317-20170325231311596-1606177239.png)
+![process](images/1110317-20170325231311596-1606177239.png)
 
 可以写一个makefile：
 
@@ -61,7 +61,7 @@ dc:
 
 对于2000.11 版的Design Compiler，用户可以通过四种方式启动Design Compiler，他们是——dc_shell 命令行方式、dc_shell-t 命令行方式、design_analyzer 图形方式和design_vision图形方式。其中后面两种图形方式是分别建立在前面两种命令行方式的基础上的。
 
-![dcshell](image-22.png)
+![dcshell](images/image-22.png)
 
 - dc_shell 命令行方式
 
@@ -175,7 +175,7 @@ write_lib xxx0 -format db -output xxx.db
   > 可以开发或购买额外的designware库，然后设置在synthetic_library中。
   > Multiple architectures for each macro allow DC to evaluate speed/area tradeoffs and choose the best implementation
 
-  ![synthetic_library](image-4.png)
+  ![synthetic_library](images/image-4.png)
 
   ```tcl
   lappend search_path "/path/to/synthetic_library_dir" ;# e.g. /cadtools/synopsys/syn_vQ-2019.12-SP2/libraries/syn
@@ -203,17 +203,17 @@ uniquify ;# Each instance gets a unique design name
 
 ### 设置环境
 
-![environment](image-8.png)
+![environment](images/image-8.png)
 
 - `set_operating_coditions`: 设置PVT条件
 
-  ![corner](image-20.png)
+  ![corner](images/image-20.png)
 
   > PVT代表process（工艺），voltage（电压），temperature（温度）。corner（工艺角）是用来表征process的，包括了tt，ff，ss等。
   > 静态时序分析一般仅考虑Best Case和Worst Case，也称作Fast Process Corner 和Slow Process Corner，分别对应极端的PVT条件。这里的corner就是一种广义的角，与前面提到的狭义的（工艺）corner不同。
   > 时序分析中，best和worst是根据delay而言的，delay小的是best。但是时序越好，功率越差，这两者总是相反的。因此对delay而言best的时候，power可能是worst。
 
-  ![pvt](image-21.png)
+  ![pvt](images/image-21.png)
 
   | Corner Condition       | Cell Designator | Process (PMOS) | Process (NMOS) | Voltage    | Temperature |
   |------------------------|------------------|----------------|----------------|------------|-------------|
@@ -243,7 +243,7 @@ uniquify ;# Each instance gets a unique design name
 
   > wire_load 模型的选择很重要，太悲观或太乐观的模型都将产生综合的迭带，在pre-layout 的综合中应选用悲观的模型(ss, high temp, low voltage)
 
-  ![wire load](image-10.png)
+  ![wire load](images/image-10.png)
 
   DC 在估算连线延时时，会先算出连线的扇出，然后根据扇出查表，得出长度，再在长度的基础上计算出它的电阻和电容的大小。若扇出值超出表中的值（假设为4），那么 DC就要根据扇出和长度的斜率（Slope）外推算出此时的连线长度来。
 
@@ -305,18 +305,18 @@ uniquify ;# Each instance gets a unique design name
 
 ### 施加设计约束
 
-![constraints](image-11.png)
+![constraints](images/image-11.png)
 
 #### 为什么需要时序约束
 
-![dff](image-6.png)
+![dff](images/image-6.png)
 
 - **setup constraints**: Qan从FFa/Q传到FFb/D不能超过一个T。这就是timing path的SETUP检查；SETUP检查要求数据不能传播太慢/太久
 - **hold constraints**: Qan传播到FFb/D的过程不能太快，不能再第n个Clk的上升沿就被FFb采到。要求数据不能传播太快
 
 #### 时序类型
 
-![paths](image-7.png)
+![paths](images/image-7.png)
 
 > Path: 每一条路径都由startpoint 和endpoint;
 
@@ -328,11 +328,11 @@ uniquify ;# Each instance gets a unique design name
 
 DesignTime 对时序路径的分解是根据时序路径的起点和终点的位置来决定的。每一条时序路径都有一条起点和终点，起点是输入端口或者触发器的时钟输入端；终点是输出端口或者触发器的数据输入端，另外根据终点所在的触发器的时钟不同还可以对这些时序路径进行分组（Path Group），如下图电路中存在4条时序路径，3个路径组，CLK1 和 CLK2组分别表示他们的终点是受CLK1 和 CLK2 控制的，DEFAULT 组则说明他们的终点不受任何一个时钟控制。
 
-![path](image-24.png)
+![path](images/image-24.png)
 
 再例如下⾯的⼀个电路，⼀共有 12 条时序路径和 3 条路径组。
 
-![path2](image-25.png)
+![path2](images/image-25.png)
 
 #### 设计规则的约束：technology-specific restriction
 
@@ -358,14 +358,14 @@ DesignTime 对时序路径的分解是根据时序路径的起点和终点的位
   set_max_transition 2.0 -datapath [get_clocks clk1]
   ```
 
-  ![path](image-12.png)
+  ![path](images/image-12.png)
 
 - `set_max_fanout`: set the max_fanout attribute to a specified value on input ports and designs
 
   > set_fanout_load is design envoronment; set_max_fanout is a design constraint.
   > Design Compiler models fanout restrictions by associating a fanout_load attribute with each input pin and a max_fanout attribute with each output (driving) pin on a cell.
 
-  ![fanout](image-9.png)
+  ![fanout](images/image-9.png)
 
   > An input pin normally has a fanout load of 1, but it can have a higher value. The fanout load imposed by a driven cell (U3)is not necessarily 1.0.
   > Library developers can assign higher fanout loads (for example,2.0) to model internal cell fanout effects.
@@ -387,13 +387,13 @@ DesignTime 对时序路径的分解是根据时序路径的起点和终点的位
 
 > 对于时序约束，对于简单的设计，有包括如定义时钟，设置模块的输⼊输出延时等等；复杂的情况有非理想的单时钟网络(skew, latency)、同步多时钟网络（顶层有多个时钟，但是都是由同一个源时钟分频而来，所以称为同步）、异步多时钟网络、多周期路径等。
 
-![delay](image-17.png)
+![delay](images/image-17.png)
 
 - `create_clock`: 主要定义一个Clock 的source 源端、周期、占空比（时钟高电平与周期的比例）及信号上升沿及下降沿的时间点。
 
   > Clock 三要素：Waveform、Uncertainty 和Clock group。
 
-  ![clock](image-18.png)
+  ![clock](images/image-18.png)
 
   ```tcl
   create_clock -name SYSCLK -period 20 -waveform {0 5} [get_ports2 SCLK]
@@ -414,7 +414,7 @@ DesignTime 对时序路径的分解是根据时序路径的起点和终点的位
 
 - `create_generated_clock`: generated clocks 是从master clock 中取得的时钟定义。master clock就是指create_clock 命令指定的时钟产生点
 
-  ![generated clk](image-19.png)
+  ![generated clk](images/image-19.png)
 
   ```tcl
   #定义master clock
@@ -448,13 +448,13 @@ DesignTime 对时序路径的分解是根据时序路径的起点和终点的位
 
 - `set_input_delay`: constrains input paths. it specify how much time is used by external logic. Then DC calculates how much time is left for the internal logic(Tcycle-Tinput_delay). 定义信号相对于时钟的到达时间。指一个信号，在时钟沿之后多少时间到达。
 
-  ![input delay](image-13.png)
-  ![input delay2](image-14.png)
+  ![input delay](images/image-13.png)
+  ![input delay2](images/image-14.png)
 
 - `set_output_delay`: constrains output paths. it specify how much time is used by external logic. Then DC calculates how much time is left for the internal logic(Tcycle-Toutput_delay).
 
-  ![output delay](image-15.png)
-  ![output delay2](image-16.png)
+  ![output delay](images/image-15.png)
+  ![output delay2](images/image-16.png)
 
 - `set_max_area`: To reduce the area as much as possible, you can use `set max_area 0`. The area violation will disclose the total area of your design after synthesis.
 
@@ -504,27 +504,27 @@ compile –only_design_rule
 
 默认的时候 `report_timing` 报告每⼀条路径组中的最⻓路径。 报告⼀共分为 4 个部分:
 
-![report timing](image-26.png)
+![report timing](images/image-26.png)
 
 - 第一部分显示了路径的基本信息一一工作状态是 slow_125_1.62，工艺库名称为SSC_core_slow，连线负载模式是 enclosed。接下来指出这条最长路径的起点是 data1（输入端口），终点是u4（上升沿触发的触发器），属于 clk 路径组，做的检查是建立时间检查（max）。这一部分的最后还报告了电路的连线负载模型。
 
-  ![report timing2](image-27.png)
+  ![report timing2](images/image-27.png)
 
 - 第二部分列出了这条最长路径所经过的各个单元的延时情况，分成三列：第一列说明的是各个节点名称，第二列说明各个节点的延时，第三列说明路径的总延时，后面所接的f或者r则暗示了这个延时是单元的哪个时钟边沿。例如图中的路径经过了一个反相器，一个二输入与非门，一个二输入 MUX，最后到达 D触发器。其中反相器的延时为 0.12ns，路径总延时为 1.61ns。
 
-  ![report timing3](image-28.png)
+  ![report timing3](images/image-28.png)
 
 - 第三部分说明了这条路径所要求的延时，它是设计者通过时序约束施加的。例如时钟周期为5ns，触发器的建立时间为0.19（从工艺库中得到），要满足建立时间的要求，组合路径延时必须在4.81ns 之内。
 
-  ![report timing4](image-29.png)
+  ![report timing4](images/image-29.png)
 
 - 第四部分为时序报告的结论，它把允许的最大时间减去实际的到达时间，得到一个差值，这个差值称为时序裕量（Timing margin），如果为正数，则说明实际电路满足时序要求，为负数则说明有时序违反。上图的裕量为3.20，说明最长路径满足建立时间的要求，且有3.20ns的裕量。暗含的意思是所有这个 clk 组的路径都满足建立时间的要求，并且裕量大于 3.20ns。
 
-  ![margin](image-30.png)
+  ![margin](images/image-30.png)
 
 除了报告电路综合后的时序之外， 还可以帮助我们诊断综合电路中存在的时序问题,如：
 
-![eg](image-31.png)
+![eg](images/image-31.png)
 
 这个例⼦仅仅列出了报告的第⼆部分， 报告的右边有四头鲸， 它们分别指出了电路中存在的四个问题：
 

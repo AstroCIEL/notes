@@ -27,39 +27,34 @@ grep -r 'to_be_found' .
 
 ## find files whose name has certain pattern and delete them
 
-```bash 
+```bash
 find . -type f -name "*to_be_found*" -exec rm {} \;
 # if you want to be asked when each file is deleted, add -i
 find . -type f -name "*to_be_found*" -exec rm -i {} \;
 ```
 
-## `zip`
+## extract and archive with `zip`, `tar`, `gzip`
 
 ```bash
+# .zip
 zip -r dir.zip dir
 unzip filename.zip -d filedir
-```
 
-## `tar`
+# .tar.gz
+tar -zcvf [file_name].tar.gz [dir] #打包成.tar.gz文件
+tar -zxvf [file_name].tar.gz -C [dir] #解压.tar.gz文件到指定目录
 
-```bash
-tar -zcvf [file_name].tar.gz [dir] #打包成.gz文件
-tar -zxvf [file_name].tar.gz -C [dir] #解压.gz文件到指定目录
-```
-
-## `gzip`
-
-```bash
+# .gz
 gzip [file_name] #压缩文件，但是会删除原文件
 gzip -c [file_name] > [file_name].gz #压缩文件，保留原文件
-
 gzip -d [file_name].gz #解压文件
 ```
 
-## check storage usage using `du`
+## check storage usage using `du`& `df`
 
 ```bash
 du -sh [dir] #查看dir的总大小
+df -h [dir] #查看目录空余空间
 
 du -h --max-depth=1 [dir] #查看dir下各个子目录的大小
 du -h -d 1 [dir] #--max-depth简写-d
@@ -98,9 +93,22 @@ tmux kill-session -t <session-name>
 ## `conda`常用命令
 
 ```bash
+conda init
+
 conda create --name <env_name> python=<version>
 
 conda env list
 
 conda env remove --name <env_name>
+```
+
+## 权限设置`chmod`
+
+```bash
+# 给所有用户添加读和执行权限
+chmod -R a+rx .
+
+# 当前用户rwx，其他用户rx
+chmod -R u+rwx,g+rx,o+rx . # 或
+chmod -R 755 .
 ```

@@ -168,7 +168,7 @@ PDDWUW0408SDGH_V DINPAD_TDI ( .I(1'b0), .OEN(1'b1), .IE(1'b1), .PAD(pad_tdi), .P
 
 ### 图例
 
-![pad_top](image.png)
+![pad_top](images/image.png)
 
 ### io cell & pad cell概念辨析
 
@@ -202,7 +202,7 @@ PDDWUW0408SDGH_V DINPAD_TDI ( .I(1'b0), .OEN(1'b1), .IE(1'b1), .PAD(pad_tdi), .P
 
 ### 行为级
 
-![dcim](image-1.png)
+![dcim](images/image-1.png)
 
 ### 接口
 
