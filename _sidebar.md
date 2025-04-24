@@ -2,12 +2,14 @@
 
 - [**FLOW**](/flow.md)
 
-- 前端
+- FrontEnd
   - [vcs&verdi](/frontend/vcs_verdi.md)
   - [spyglass](/frontend/spyglass.md)
   - [design compiler](/frontend/design_compiler_synthesis.md)
+  - [lib file](/frontend/lib.md)
+  - [AMS](/frontend/AMS.md)
 
-- 后端
+- BackEnd
   - [Innovus](/backend/innovus.md)
   - [SramCompiler](/backend/sram_compiler.md)
   - [Calibre](/backend/calibredrv.md)
@@ -19,7 +21,7 @@
   - [tensor_core](/rtl/tensor_core.md)
   - [DCO](/rtl/DCO.md)
 
-- BASIC
+- Basic
   - [flow](/basic/asic_flow.md)
   - [verilog](/basic/verilog.md)
   - [tcl](/basic/tcl.md)
