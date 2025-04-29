@@ -1,5 +1,19 @@
 # .lib文件详解
 
+## lib转db
+
+synopsys不读取lib格式，所以需要将lib格式的库文件转换为db格式的库文件。
+
+```tcl
+# 启动library compiler shell
+lc_shell 
+
+# 转换
+read_lib xxx.lib 
+write_lib xxx0 -format db -output xxx.db
+# 注意此处的xxx0是原先lib文件中lib名（并非文件名，虽然一般lib名和文件名一样）
+```
+
 ## 模型分类
 
 根据不同的driver model，lib可以分成三类：Concurrent Current Source (CCS), Effective Current Source Model (ECSM), Non-Linear Delay Model (NLDM)
@@ -12,7 +26,7 @@
 
 ## 文件结构
 
-```C
+```c
 library(lib_name){
   /* pvt & condition*/
 
@@ -57,7 +71,7 @@ library(lib_name){
 
 ### pvt & condition
 
-```C
+```c
   /*pvt & condition*/
   technology (cmos) ;
   delay_model         : table_lookup;
@@ -85,7 +99,7 @@ tree指的是RC tree，一共三种model。best指的是假设线上没有电阻
 
 ### unit attributes
 
-```C
+```c
   /* unit attributes */
   time_unit           : "1ns";
   voltage_unit        : "1V";
@@ -97,7 +111,7 @@ tree指的是RC tree，一共三种model。best指的是假设线上没有电阻
 
 ### default attributes
 
-```C
+```c
   /* default attributes */
   default_fanout_load            : 1.000;
   default_cell_leakage_power     : 0.000;
@@ -110,7 +124,7 @@ tree指的是RC tree，一共三种model。best指的是假设线上没有电阻
 
 ### threshold definitions
 
-```C
+```c
   /* threshold definitions */
   default_leakage_power_density  : 0.000;
   slew_derate_from_library       : 0.500;
@@ -142,7 +156,7 @@ tree指的是RC tree，一共三种model。best指的是假设线上没有电阻
 
 ### k-factors
 
-```C
+```c
   /* k-factors */
   k_process_cell_fall            : 0.000;
   k_process_cell_leakage_power   : 0.000;
@@ -213,7 +227,7 @@ tree指的是RC tree，一共三种model。best指的是假设线上没有电阻
 
 ### templates
 
-```C
+```c
   /* templates */ 
   lu_table_template(delay_template_5x5) {
     variable_1 : input_net_transition;
@@ -264,7 +278,7 @@ tree指的是RC tree，一共三种model。best指的是假设线上没有电阻
 
 ### wire-loads
 
-```C
+```c
   /* wire-loads */
   wire_load("sample") {
     resistance   : 1.6e-05;
@@ -282,7 +296,7 @@ DC采用wire-load模型在布局前预估连线的延时。通常，在工艺库
 
 ### 示例
 
-```C
+```c
   cell(MODULE_NAME) {
     area : 139000.00;
     dont_use : true;
@@ -493,4 +507,50 @@ Synopsys支持的延时模型包括:CMOS通用延时模型、CMOS分段线性延
 
 ### 如何手动编写timing
 
+首先需要保证语法的正确性。最快捷的验证方法就是尝试将lib转db，在读取lib的过程中，如果出现问题，lc_shell会将相应的error展示出来，由此做 对应的修改。另外，还可以依据fab提供的标准单元的lib文件做参考。语法上需要注意的点列举如下：
 
+- .lib文件里面library的名称和cell的名称一定要检查，和本次使用的去对应。
+- 注释只能使用/**/, 不能使用//
+- 时钟pin需要指定`clock: true ;`
+- 表格values的最后一行不要加逗号，否则可能会报`values are not specified`的错误。
+
+```c
+/*wrong*/
+rise_constraint(constraint_template_5x5) { 
+  index_1 ("0.0016, 0.0334, 0.0971, 0.2245, 0.4793");
+  index_2 ("0.0016, 0.0654, 0.193, 0.4482, 0.9587");
+  values ( \
+    "0.293308, 0.294024, 0.300756, 0.322516, 0.372454", \
+    "0.293324, 0.293862, 0.301210, 0.322011, 0.370379", \
+    "0.290726, 0.291995, 0.297502, 0.317066, 0.362712", \
+    "0.285627, 0.285619, 0.289912, 0.306514, 0.349077", \
+    "0.276066, 0.274594, 0.275506, 0.287386, 0.326234", \
+  );
+}
+
+/*right*/
+rise_constraint(constraint_template_5x5) { 
+  index_1 ("0.0016, 0.0334, 0.0971, 0.2245, 0.4793");
+  index_2 ("0.0016, 0.0654, 0.193, 0.4482, 0.9587");
+  values ( \
+    "0.293308, 0.294024, 0.300756, 0.322516, 0.372454", \
+    "0.293324, 0.293862, 0.301210, 0.322011, 0.370379", \
+    "0.290726, 0.291995, 0.297502, 0.317066, 0.362712", \
+    "0.285627, 0.285619, 0.289912, 0.306514, 0.349077", \
+    "0.276066, 0.274594, 0.275506, 0.287386, 0.326234" \
+  );
+}
+```
+
+由于自己设计的hard macro可能规模较大，使用eda工具例如liberate来K库比较耗时还容易报错，因此可以考虑手工编写lib文件。此处提供一种手写lib的思路。
+
+首先，cell之前的部分信息都比较简单，复制其他参考库lib的部分就行。然后编写cell的信息，主要是timing部分需要去编写。
+
+![example](images/image-43.png)
+
+- 对于input方向的pin或者bus，可以去看一下这个信号进入顶层后第一个遇到的cell，例如图中A一开始遇到的是一些组合逻辑，而D信号一开始则是DFF的输入
+  - 如果是对时序不重要或者完全是组合逻辑的，例如上图的A信号，则可以缺省timing信息。这是最简单的情况。
+  - 如果是对时序有要求的，例如D，由于他直接连到了DFF上，因此可以去找工艺库中DFF标准单元的lib，将其timing信息（例如上升下降时间，相对于时钟pin的建立和保持时间限制）复制过来。
+- 对于output方向的pin或者bus，可以去看一下这个信号接出前最后一个经过的cell，例如图中B最后经过的是一个反相器
+  - 如果是完全是组合逻辑的，例如上图的B信号，由于他最后经过的是一个反相器，所以可以去工艺库的标准单元库找反相器的lib信息，将其timing信息（主要包括上升下降时间）复制过来。
+  - 如果是对时序有要求的，例如C，由于他最后经过的是一个DFF，因此可以去找DFF的lib信息，将其timing信息（例如上升下降时间，相对于时钟pin的延迟时间）复制过来。
