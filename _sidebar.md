@@ -29,4 +29,5 @@
   - [makefile](/basic/makefile.md)
   - [smic28HKD](/basic/smic28HKD.md)
   - [EDA](/basic/eda.md)
+  - [tips](/tape-out/tips.md)
 <!-- 以下略 -->
