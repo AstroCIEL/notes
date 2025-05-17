@@ -13,6 +13,8 @@
   - [Innovus](/backend/innovus.md)
   - [SramCompiler](/backend/sram_compiler.md)
   - [Calibre](/backend/calibredrv.md)
+  - [PEX](/backend/pex.md)
+  - [post-sim](/backend/post_sim.md)
 
 - RTL
   - [IO_TOP](/rtl/IO_TOP.md)

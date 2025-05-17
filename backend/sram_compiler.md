@@ -42,10 +42,15 @@ work/home/wumeng/SMIC28HKD_22ULP_INSTALL/SMIC22HKD_22ULP/IP/Sram compiler/
 
 - 在sram compiler的导出view中选择GDSII格式，导出的GDSII文件即为版图文件。
 - 在virtuoso菜单栏中 file-import-stream ,流文件导入：
+
   ![virtuoso](images/image-3.png)
+
 - stream file 选择需要导入的GDS文件, library 可输入新库的名字 或者选择导入已有库中
+
   ![virtuoso2](images/image-4.png)
+
 - 导入后，会在导入的目标库中产生很多个layout文件，都是sram的不同层级的（子）模块。其中，与GDSII文件同名的文件是顶层模块。如果想要知道模块层次，可以打开顶层模块的layout，然后按shift+F显示细节，再按shift+T显示树结构，即可得到模块层次。
+
   ![tree](images/image-5.png)
 
 ## SRAM的RTL功能仿真

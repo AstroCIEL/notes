@@ -24,7 +24,3 @@
 
 3. 查看Techgen是否能使用：`which Techgen`，可能的结果是`/cadtools/cadence/quantus20.12/tools/bin/Techgen`
 4. 如果Techgen可用，运行命令：`b Techgen -si -multi_cpu 8 output.ict`即可生成qrcTechfile文件。
-
-## 踩坑
-
-1. 没有itf
