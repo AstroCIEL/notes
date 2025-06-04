@@ -117,13 +117,13 @@ R代表寄生电阻，C代表节点对地的寄生电容，CC表示节点与节�
 
 NO R/C虽然不提取版图上的寄生电阻电容，但会引入MOS管的高阶效应（如WPE、STI等）以及相关的寄生二极管。
 
-![alt text](images/image-28.png)
+![option](images/image-27.png)
 
 `Use Names From`选`SCHEMATIC`. `Format`选择`SPECTRE`或者`CALIBREVIEW`.
 
 ## 设置pex options
 
-
+![alt text](images/image-28.png)
 
 点击Setup中的PEX options来显示PEX options选项卡。
 
