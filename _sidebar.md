@@ -29,7 +29,7 @@
   - [tcl](/basic/tcl.md)
   - [bash](/basic/linux.md)
   - [makefile](/basic/makefile.md)
-  - [smic28HKD](/basic/smic28HKD.md)
+  - [PDK](/basic/pdk.md)
   - [EDA](/basic/eda.md)
   - [tips](/tape-out/tips.md)
 <!-- 以下略 -->

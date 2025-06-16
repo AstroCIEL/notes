@@ -1,12 +1,14 @@
-# SMIC28HKD
+# PDK及IP相关知识
 
-## 工艺库路径
+## 目录结构（SMIC28HKD）
+
+SMIC28HKD路径在
 
 ```text
 /work/home/wumeng/SMIC22_INSTALL/SMIC28HKD_22ULP
 ```
 
-## 目录结构
+目录结构如下：
 
 ```text
 IP
@@ -32,14 +34,10 @@ TD-LO28-XC-2066-V1 # calibre XRC 使用说明
 
 ## 工艺库层级的理解
 
-最底层的大层级是pdk（process design kit），描述的是模拟版图层级的晶体管级的物理实现，例如源漏栅尺寸、金属层之类的。这是在模拟版图阶段或者数字后端最后阶段会用到的。
-往上一个层级是IP（这边暂时称为IP），里面包含了标准单元、IO、sram compiler，这里面描述的层级就到了标准件层级，例如反相器、触发器等等。里面应该包含了这个层级的单元的属性，例如查找表形式的
+最底层的大层级是pdk（process design kit，也有fab称为foundry design kit），描述的是模拟版图层级的晶体管级的物理实现，例如源漏栅尺寸、金属层之类的。这是在模拟版图阶段或者数字后端最后阶段会用到的。
+往上一个层级是IP（这边暂时称为IP），里面包含了标准单元、IO、sram compiler，这里面描述的层级就到了标准件层级，例如反相器、触发器等等。
 
 ## 字母数字组合的意义
-
-```text
-scc28nhkd_hdc30p140_rvt_ffg_v0p88_-40c.aocv
-```
 
 ### Process Corner（工艺角）
 
@@ -64,23 +62,7 @@ scc28nhkd_hdc30p140_rvt_ffg_v0p88_-40c.aocv
 - best case 对应ffg、low temperature、high voltage（可以跑的最高频率）
 - worst case 对应ssg、high temperature、low voltage （可以跑的最低频率）
 
-```text
-smic28HKD_0918_1P8M_6Ic_1TMc_1MTTc_ALPA2_oa_cds_2023_12_15_v1.0_rev0_0
-```
-
 ### layer
-
-这次我们使用的金属层是6+1+1，即M1~M6, TM1, MTT2，一共八层。
-说明文件在
-
-```text
- /work/home/wumeng/SMIC22_INSTALL/SMIC28HKD_22ULP/TD-LO28-DR-2020_V2/TD-LO28-DR-2020v2.pdf
- ```
-
-- 1P8M：表示 1 层多晶硅（Poly）和 8 层金属（Metal）的工艺层。
-- 6Ic：表示 6 层互连（Interconnect）。
-- 1TMc：可能表示 1 层顶部金属（Top Metal）。厚金属层
-- 1MTTc：可能表示 1 层金属到金属的通孔（Metal-to-Metal Through Contact）。超厚金属层
 
 | 名称 | 描述 | 注释 |
 | --- | --- | --- |
@@ -98,27 +80,61 @@ smic28HKD_0918_1P8M_6Ic_1TMc_1MTTc_ALPA2_oa_cds_2023_12_15_v1.0_rev0_0
 | v | number of 2X top metal layers | 两倍厚顶层铜金属层数 |
 | u | type of AL, 1 type AL14.5k, 2 type AL28k | 顶层铝金属的厚度，1=14.5KÅ，2=28KÅ |
 
-### 金属层的分配策略
+### 示例一
 
-#### (1) 低层金属（M1、M2、M3）
+```text
+scc28nhkd_hdc30p140_rvt_ffg_v0p88_-40c.aocv
+```
+
+* `scc`: 可能表示该文件属于标准单元库 (Standard Cell Library) 或 SMIC定制单元 (SMIC Custom Cells)。
+* `28nm`: 28纳米 (28 nanometer) 工艺节点
+* `nhkd`: 这部分可能表示N型高介电常数 (N High-K Dielectric)。在半导体制造中，High-K介电材料常用于栅极电介质。
+* `hd`: 可能与高密度单元 (High Density)有关.
+* `c30`: 沟长30nm
+* `p140`: 
+* `rvt`: 常规阈值电压 (Regular Threshold Voltage)。
+* `ffg`: 快-快 (Fast-Fast)工艺角，通常用于描述在极端快速工艺条件下的性能。在这种情况下，通常用于最坏情况的时序分析，以确保设计的速度满足要求。
+* `v0p88`: 0.88伏特 (0.88 Volts)的操作电压。在文件命名中，"p" 通常用作小数点。
+* `-40c`: 负40摄氏度 (-40 degrees Celsius)的操作温度。有些fab会写作`m40c`.
+* `.aocv`: 高级片上变异 (Advanced On-Chip Variation)。AOCV是一种在半导体设计中用于更精确地建模和分析芯片内部工艺变异对时序影响的技术，尤其适用于40纳米及以下的高级工艺节点。
+
+### 示例二
+
+```text
+smic28HKD_0918_1P8M_6Ic_1TMc_1MTTc_ALPA2_oa_cds_2023_12_15_v1.0_rev0_0
+```
+
+- `1P8M`：表示 1 层多晶硅（Poly）和 8 层金属（Metal）的工艺层。
+- `6Ic`：表示 6 层互连（Interconnect）。
+- `1TMc`：表示 1 层顶部金属（Top Metal）。厚金属层
+- `1MTTc`：可能表示 1 层金属到金属的通孔（Metal-to-Metal Through Contact）。超厚金属层
+
+使用的金属层是6+1+1，即M1~M6, TM1, MTT2，一共八层。
+说明文件在`/work/home/wumeng/SMIC22_INSTALL/SMIC28HKD_22ULP/TD-LO28-DR-2020_V2/TD-LO28-DR-2020v2.pdf`
+
+### 示例三
+
+## 金属层的分配策略
+
+### (1) 低层金属（M1、M2、M3）
 
 - 标准单元之间的信号布线。
 - 特点：布线密度高，适合短距离信号传输。
 - 注意事项：避免过度拥挤，防止 DRC 违规。
 
-#### (2) 中层金属（M4、M5）
+### (2) 中层金属（M4、M5）
 
 - 中等距离信号布线和电源带。
 - 特点：电阻和电容较低，适合中等距离信号传输。
 - 注意事项：合理分配电源带和信号布线资源。
 
-#### (3) 高层金属（M6、M7、M8 及以上）
+### (3) 高层金属（M6、M7、M8 及以上）
 
 - 长距离信号布线、电源网格和时钟树布线。
 - 特点：电阻和电容低，适合长距离信号传输和高电流承载。
 - 注意事项：优先用于全局电源网络和关键信号布线。
 
-#### 示例：典型金属层分配
+### 示例：典型金属层分配
 
 | 金属层 | 方向 | 用途 |
 | --- | --- | --- |
@@ -196,3 +212,5 @@ smic28HKD_0918_1P8M_6Ic_1TMc_1MTTc_ALPA2_oa_cds_2023_12_15_v1.0_rev0_0
 12. .map (Mapping File)：
   - 用于映射不同的文件格式或命名约定，通常在 LVS 和 DRC 检查中使用。
 
+13. .aocv (Advanced On-Chip Variation): 
+  - 高级片上变异。AOCV是一种在半导体设计中用于更精确地建模和分析芯片内部工艺变异对时序影响的技术，尤其适用于40纳米及以下的高级工艺节点。
