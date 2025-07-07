@@ -1,7 +1,5 @@
 <!-- 侧边栏 docs/_sidebar.md -->
 
-- [**FLOW**](/flow.md)
-
 - FrontEnd
   - [vcs&verdi](/frontend/vcs_verdi.md)
   - [spyglass](/frontend/spyglass.md)
@@ -14,7 +12,7 @@
   - [SramCompiler](/backend/sram_compiler.md)
   - [Calibre](/backend/calibredrv.md)
   - [PEX](/backend/pex.md)
-  - [post-sim](/backend/post_sim.md)
+  - [post-sim](/backend/post-sim.md)
 
 - RTL
   - [IO_TOP](/rtl/IO_TOP.md)

@@ -214,3 +214,333 @@ smic28HKD_0918_1P8M_6Ic_1TMc_1MTTc_ALPA2_oa_cds_2023_12_15_v1.0_rev0_0
 
 13. .aocv (Advanced On-Chip Variation): 
   - 高级片上变异。AOCV是一种在半导体设计中用于更精确地建模和分析芯片内部工艺变异对时序影响的技术，尤其适用于40纳米及以下的高级工艺节点。
+
+## TSMC22安装实录（EDA02）
+
+### path
+
+original pdk installer: 
+
+```text
+/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111
+```
+
+pdk&ip installed: 
+
+```text
+/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL
+|
+|--Doc
+|--PDK: for anything about device(e.g. nmos, pmos) and technology(QRC, StarRC,layermap) you should find it here
+|--IP: for memorycompiler(e.g. sram compiler)/stdcell(e.g. DFF, AND, XOR)/stdio(e.g. PAD) you should find it here
+```
+
+### part1-PDK
+
+original pdk is `/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/PDK`where 2 zip files are included, and main pdk zip is TN22CRSP004W1_1_3_1P1A.zip and the patch is another. 
+
+destination path is `/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/PDK/PDK`
+
+to install another new pdk, e.g., of other metal stack options, you should 
+
+- extract two original zip files into destination dir(first completely extract main pdk zip TN22CRSP004W1_1_3_1P1A.zip where a inner zip is included. within the inner zip are 2 tar.extract them directly and make sure the extracted PDK_doc dir is the same level with tsmcN22 dir. then extract patch tar under main pdk root dir as a patch dir, also the same level as tsmcN22 dir) 
+- into the patch dir and install the patch. using perl pdkPatchInstall.pl
+- then install the whole pdk using perl pdkInstall.pl(to use cadence virtuoso you should choose pdk type as skill Pcell. LO denoting logic should be chosen instead of RF.)
+- after successful installation you should rename the pdk dir based on your installation options such as 0.8V_2.5V_1P9M_6X2R_UT_ALRDL_StarRC_QRC to display detailed pdk info to avoid confusion.
+
+note all options
+
+- io voltage: the higher, the noise resistency and driving capbility is better; the lower, the less power-consuming
+
+- LO/RF: for digital design, LO is preferred usually; you can check it further online.
+
+- 1p8m 5x1z1u:1 poly, 1 metal1, 5 metal layer of x thickness, 1 metal layer of z thickness, and 1 metal layer of u thickness. In most cases, z means top metal layer, u means  ultra thick metal layer.
+
+additional QRC XRC etc can be found in `/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/RC_File_20221206`.
+
+1p9m_6x1z1u is the metal option we usually used, install it first.notice that pdk installer does not provide QRC and StarRC for this metal option. you can find them in `/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/RC_File_20221206` and extract them in destination pdk dir with new dir name QRC and StarRC.
+
+### part2-IP
+
+#### memory compiler
+
+All original installation tgz is at
+`/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/Memory_compiler/TS83`
+
+While the same prefix means one category(e.g. CAxxx are about sram_sp_xxxxx while CBxxx are about sram_dp_xxxxx),but you can still view one dir as one specific kind(e.g. CA000 is about sram_sp_uhde_shvt_mvt while CA001 is about sram_sp_hde_shvt_mvt). therefore, it is recommanded that you process one dir(e.g. CA000) at a time. steps are as follows
+
+- copy those CAxxx and other from the original path to destination path like /data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Memory_Compiler.
+- copy unpack_sram.sh into CA000 for example, and execute it.
+- then sram_sp_uhde_shvt_mvt/ should all be extracted into /data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Memory_Compiler
+- delete CAxxx and so on(dont delete them from the original path because that's an original copy)
+
+Note that because the shared hirerachy of each tgz is `arm/tsmc/cln22ul/`, so `arm/tsmc/cln22ul/` structure is abandoned. sram_unpack.sh is as follows
+
+```bash
+#!/bin/bash
+
+source_dir="."
+target_dir="/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Memory_Compiler"
+
+mkdir -p "$target_dir"
+
+find "$source_dir" -type f -name "*.tgz" -print0 | while IFS= read -r -d '' tgz_file; do
+    echo "Extracting $tgz_file to target directory"
+    tar -xzf "$tgz_file" --strip-components=3 -C "$target_dir"
+done
+```
+
+Currently all CAxxx(single port sram) are processed.
+
+#### std_io
+
+In original path `/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/IP`, tpbn22v_110a, tpbn22v_eu_lf_bump_080b, tpbn22v_eu_lf_bump_080b, tphn22ullgv18e_150b the four are std io. Copy them to destination path like `/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Std_IO`. Execute extract.sh and merge_all.sh in order.(Or you can just use the very bash scripts used in std_cell part, which we will mention it later)
+
+```bash
+#!/bin/bash
+
+
+for dir in */; do
+  if [[ -d "$dir" ]]; then
+
+    cd "$dir"
+
+    for file in *.tar.gz; do
+      if [[ -f "$file" ]]; then
+        filename=$(basename "$file" .tar.gz)
+
+        mkdir "$filename" && tar -xzf "$file" -C "$filename"
+        echo "extract $dir $filename\n"
+        rm "$file"
+      fi
+    done
+    cd ..
+  fi
+done
+```
+
+```bash
+#!/bin/bash
+
+# ---------------------------------------------------------------------------
+# Bash Script for Batch Directory Merging (Back_End, Front_End, Documentation) and Cleanup
+# Author: Your Name (Optional)
+# Date: May 17, 2025
+# Description: Navigates into each subdirectory in the current location,
+#              merges Back_End, Front_End, and Documentation directories from their
+#              ./<first_level_folder>/TSMCHOME/digital/ structures into
+#              ./digital/ within that subdirectory, and then removes
+#              the original TSMCHOME structure.
+# ---------------------------------------------------------------------------
+
+# Exit immediately if a command exits with a non-zero status.
+set -e
+
+# Treat unset variables as an error.
+set -u
+
+# ---------------------------------------------------------------------------
+# Function to process a single root-like directory
+# This function expects to be called from inside the directory it should process.
+# ---------------------------------------------------------------------------
+process_single_directory() {
+    local current_root_dir=$(pwd)
+    echo "-> Processing directory: ${current_root_dir}"
+
+    # Define the target directories relative to the current directory (root)
+    local TARGET_DIGITAL_DIR="./digital"
+    local TARGET_BACKEND_DIR="${TARGET_DIGITAL_DIR}/Back_End"
+    local TARGET_FRONTEND_DIR="${TARGET_DIGITAL_DIR}/Front_End"
+    local TARGET_DOCUMENTATION_DIR="${TARGET_DIGITAL_DIR}/Documentation" # Added Documentation target
+
+    # ---------------------------------------------------------------------------
+    # Step 1: Create the target base directories if they don't exist
+    # ---------------------------------------------------------------------------
+    echo "  Ensuring target directories exist:"
+    echo "    - ${TARGET_BACKEND_DIR}"
+    echo "    - ${TARGET_FRONTEND_DIR}"
+    echo "    - ${TARGET_DOCUMENTATION_DIR}" # Added Documentation target creation
+    # Use -p to create parent directories as needed and avoid errors if they exist
+    mkdir -p "${TARGET_BACKEND_DIR}" "${TARGET_FRONTEND_DIR}" "${TARGET_DOCUMENTATION_DIR}"
+    echo "  Target directories are ready."
+
+    # ---------------------------------------------------------------------------
+    # Step 2: Iterate through all items in the current directory
+    # ---------------------------------------------------------------------------
+    echo "  Scanning for first-level subfolders within ${current_root_dir}..."
+
+    # Loop through all items in the current directory (*)
+    for item in *; do
+        # Check if the item is a directory AND it's not our target 'digital' directory
+        if [ -d "$item" ] && [ "$item" != "$(basename "$TARGET_DIGITAL_DIR")" ]; then
+            echo "  Processing subfolder: ${item}"
+
+            # Define the expected source directories within this subfolder
+            local SOURCE_BACKEND_DIR="${item}/TSMCHOME/digital/Back_End"
+            local SOURCE_FRONTEND_DIR="${item}/TSMCHOME/digital/Front_End"
+            local SOURCE_DOCUMENTATION_DIR="${item}/TSMCHOME/digital/Documentation" # Added Documentation source
+            local CLEANUP_SOURCE_TSMCHOME="${item}/TSMCHOME" # The directory to clean up
+
+            local merged_anything=0 # Flag to check if we found anything to merge
+
+            # -------------------------------------------------------------------
+            # Step 3: Check for and merge Back_End directory
+            # -------------------------------------------------------------------
+            if [ -d "$SOURCE_BACKEND_DIR" ]; then
+                echo "    Found Back_End source: ${SOURCE_BACKEND_DIR}"
+                echo "    Merging contents to: ${TARGET_BACKEND_DIR}"
+                rsync -av "${SOURCE_BACKEND_DIR}/" "${TARGET_BACKEND_DIR}/"
+                echo "    Back_End merge complete for ${item}."
+                merged_anything=1
+            else
+                echo "    Back_End source not found in ${item} (looked for ${SOURCE_BACKEND_DIR}). Skipping."
+            fi
+
+            # -------------------------------------------------------------------
+            # Step 4: Check for and merge Front_End directory
+            # -------------------------------------------------------------------
+            if [ -d "$SOURCE_FRONTEND_DIR" ]; then
+                echo "    Found Front_End source: ${SOURCE_FRONTEND_DIR}"
+                echo "    Merging contents to: ${TARGET_FRONTEND_DIR}"
+                rsync -av "${SOURCE_FRONTEND_DIR}/" "${TARGET_FRONTEND_DIR}/"
+                echo "    Front_End merge complete for ${item}."
+                merged_anything=1
+            else
+                echo "    Front_End source not found in ${item} (looked for ${SOURCE_FRONTEND_DIR}). Skipping."
+            fi
+
+            # -------------------------------------------------------------------
+            # Step 5: Check for and merge Documentation directory (Added)
+            # -------------------------------------------------------------------
+            if [ -d "$SOURCE_DOCUMENTATION_DIR" ]; then
+                echo "    Found Documentation source: ${SOURCE_DOCUMENTATION_DIR}"
+                echo "    Merging contents to: ${TARGET_DOCUMENTATION_DIR}"
+                rsync -av "${SOURCE_DOCUMENTATION_DIR}/" "${TARGET_DOCUMENTATION_DIR}/"
+                echo "    Documentation merge complete for ${item}."
+                merged_anything=1
+            else
+                echo "    Documentation source not found in ${item} (looked for ${SOURCE_DOCUMENTATION_DIR}). Skipping."
+            fi
+
+
+            # -------------------------------------------------------------------
+            # Step 6: Clean up the source TSMCHOME structure after attempting merge
+            # -------------------------------------------------------------------
+            # Clean up if the TSMCHOME structure exists.
+            if [ -d "$CLEANUP_SOURCE_TSMCHOME" ]; then
+               echo "    Cleaning up source structure: ${CLEANUP_SOURCE_TSMCHOME}"
+               # !!! BE EXTREMELY CAREFUL WITH rm -rf !!!
+               # This command will permanently delete the directory and its contents.
+               # Consider adding a prompt here for safety if you uncomment the rm line below.
+               # read -p "    Confirm removal of ${CLEANUP_SOURCE_TSMCHOME}? (y/n) " confirm
+               # if [[ "$confirm" == [yY] ]]; then
+               #    rm -rf "${CLEANUP_SOURCE_TSMCHOME}"
+               #    echo "    Removed."
+               # else
+               #    echo "    Skipping removal."
+               # fi
+               # --- Uncomment the direct removal below if you are confident ---
+               rm -rf "${CLEANUP_SOURCE_TSMCHOME}"
+               echo "    Removed."
+            else
+               echo "    Source TSMCHOME structure not found for cleanup: ${CLEANUP_SOURCE_TSMCHOME}. Skipping cleanup."
+            fi
+
+
+        else
+            # Skip items that are not directories or are the target 'digital' directory
+            echo "  Skipping non-directory or target item within ${current_root_dir}: ${item}"
+        fi
+    done
+
+    echo "-> Finished processing directory: ${current_root_dir}"
+}
+
+# ---------------------------------------------------------------------------
+# Main script execution starts here
+# This part iterates through subdirectories in the current location
+# ---------------------------------------------------------------------------
+
+echo "Starting batch directory merge (Back_End, Front_End, Documentation) and cleanup process..."
+echo "Script is running from: $(pwd)"
+echo "Will process all subdirectories found in the current location."
+echo ""
+echo "!!! WARNING: This script will permanently delete source TSMCHOME directories !!!"
+echo "!!!          Ensure you have a backup before proceeding!                   !!!"
+echo ""
+# Optional: Add a delay or confirmation here before starting
+# read -p "Press Enter to start the process or Ctrl+C to abort..."
+
+# Iterate through all items in the current directory (the parent level)
+for project_dir in *; do
+    # Check if the item is a directory AND it's not the script file itself
+    if [ -d "$project_dir" ] && [ "$project_dir" != "$(basename "$0")" ]; then
+        echo "--------------------------------------------------"
+        # Use pushd/popd to safely change directory and return
+        if pushd "$project_dir" > /dev/null; then # > /dev/null suppresses pushd output
+            # Call the function to process the current directory
+            process_single_directory
+            # Return to the previous directory (where the script is running from)
+            popd > /dev/null # > /dev/null suppresses popd output
+        else
+            echo "Error: Could not enter directory ${project_dir}. Skipping."
+            # If pushd failed, we are still in the original directory, no need for popd
+        fi
+        echo "--------------------------------------------------"
+        echo ""
+    else
+        # Skip items that are not directories or are the script file itself
+        echo "Skipping non-directory or script file: ${project_dir}"
+    fi
+done
+
+echo "Batch directory merge and cleanup process finished for all subdirectories."
+
+# ---------------------------------------------------------------------------
+# End of Script
+# ---------------------------------------------------------------------------
+```
+
+#### std_cell
+
+In original path `/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/IP`, except for tpbn22v_110a, tpbn22v_eu_lf_bump_080b, tpbn22v_eu_lf_bump_080b, tphn22ullgv18e_150b which are std io, all others are std cell ip. Copy them to destination path like `/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Std_Cell`. Execute untar.sh then.
+
+```bash
+#!/bin/bash
+
+# Loop through all directories in the current directory
+for dir in */; do
+    # Check if the item is indeed a directory
+    if [ -d "$dir" ]; then
+        echo "Entering directory: $dir"
+        # Change into the directory, exit if failed
+        cd "$dir" || exit
+
+        # Loop through all .tar.gz files in the current directory
+        for tar_file in *.tar.gz; do
+            # Check if the item is indeed a regular file
+            if [ -f "$tar_file" ]; then
+                echo "Extracting file: $tar_file to current directory..."
+                # Extract the tar.gz file
+                tar -xzf "$tar_file"
+
+                # Check if extraction was successful
+                if [ $? -eq 0 ]; then
+                    echo "Extraction successful, deleting archive: $tar_file"
+                    # Remove the original tar.gz file
+                    rm "$tar_file"
+                else
+                    echo "Extraction failed: $tar_file"
+                fi
+            fi
+        done
+        echo "Exiting directory: $dir"
+        # Go back to the parent directory, exit if failed
+        cd .. || exit
+    fi
+done
+
+echo "All .tar.gz files processed."
+```
+
+Note that tar format is different from zip format. It is allowed for several tar files share the same prefix directory structure and when you extract them together, the directory structure will be preserved and merged automatically. That's why the IP libraries are usually archived into tar.gz format. You just directly extract them where they are, and the shared prefix directories are merged automatically. Don't complicate things by trying to extract them into a different directory structure.
