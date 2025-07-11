@@ -7,12 +7,15 @@
 - GDS（用于最终合成）
 - LIB（用于后端timing closure）
 
+![view](images/image-15.png)
 
 ## 执行文件路径
 
 ```text
 # tsmc22
 work/home/tyiia/common/TSMC_22NM_ULL/sram_sp_hde_svt_mvt/rlp0/bin/sram_sp_hde_svt_mvt
+# or 
+/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/IP/Memory_Compiler/sram_sp_hde_svt_mvt/r1p0/bin/sram_sp_hde_svt_mvt
 
 # simc22
 /ftp/Design_rule/SMIC/SMIC28HKD_22ULP/Sram compiler/
@@ -20,7 +23,7 @@ work/home/tyiia/common/TSMC_22NM_ULL/sram_sp_hde_svt_mvt/rlp0/bin/sram_sp_hde_sv
 work/home/wumeng/SMIC28HKD_22ULP_INSTALL/SMIC22HKD_22ULP/IP/Sram compiler/
 ```
 
-- 对于tsmc22，在终端输入这个可执行文件的路径，就可以打开sram compiler图形界面
+- 对于tsmc22，在终端输入`ksh ${可执行文件的路径}`，就可以打开sram compiler图形界面
 - 对于smic22，进入上述文件夹，可以看到A001和A000两个文件夹（或压缩包）。A001是2024三月发布的，A000是2023十一月发布的。进入任意一个文件夹（例如A000），有两个文件夹（或压缩包），一个是FE，一个是FB。将它们解压（如果还没解压的话）。FB里面是提供了gds的生成库，需要复制到FE的文件夹里面。然后再以和TSMC22nm相似的启动方式打开FE文件夹里的sram_sp_hde_svt_mvt,启动后，可以看到sram compiler的GUI如下页：
 
 ![sram_compiler](images/image.png)
@@ -29,14 +32,25 @@ work/home/wumeng/SMIC28HKD_22ULP_INSTALL/SMIC22HKD_22ULP/IP/Sram compiler/
 
 这里仅安装了single-port (SP)的SRAM compiler，这也是最常用的SRAM，同一个时钟内仅能读或者写。特殊情况下，可以使用Dual-port SRAM，这种SRAM可以同时读写，但是同样容量下面积的成本也会接近double，所以我们不会常用。
 
-> 由于每个芯片通常需要多个不同大小的sram，每次在产生sram时特别小心sram名字。不用使用默认的Instance Name，否则容易混淆。要根据sram的大小进行命名，如sram_sp_4096x16。
+## 产生view文件
+
+由于每个芯片通常需要多个不同大小的sram，每次在产生sram时特别小心sram名字。不用使用默认的Instance Name，否则容易混淆。要根据sram的大小进行命名，如sram_sp_4096x16。
 
 通过需要根据设计需求更改一下设置：
-- Words: SRAM的行数，depth
-- Bits：SRAM port的宽度，即一次读出的数据宽度
+
+- Number of Words: SRAM的深度，字长，有多少个地址
+- Number of Bits：SRAM port的宽度，即一次读出的数据宽度，字宽，每个地址存的比特数
 - Multiplier Width，Number of Banks: 不会影响SRAM容量，但会影响物理实现方式（包括长度、宽度）。通常对特别小或者特别大容量的SRAM需要更改这两个参数，才能物理产生SRAM。
 
+> 阵列行数x列数=总容量=字长x字宽
+
+> 对于tsmc的sram阵列，列数=字长 / mux_width，行数=字宽 x mux_width，即mux_width越大，macro越瘦长。而对于smic则相反，行数=字长 / mux_width，列数=字宽 x mux_width。
+
 ![sram_compiler2](images/image-2.png)
+
+如果要一次性产生多种view，可以在`Utilities->Generate Menu`中勾选需要的view。
+
+![views](images/image-16.png)
 
 ## 产生版图文件（GDSII）并导入virtuoso
 
@@ -57,11 +71,13 @@ work/home/wumeng/SMIC28HKD_22ULP_INSTALL/SMIC22HKD_22ULP/IP/Sram compiler/
 
 ### SRAM的接口
 
-关于SRAM的架构可以参考手册：`work/home/tyiia/common/TSMC_22NM_ULL/sram_sp_hde_svt_mvt/rlp0/doc/sram_sp_hde_svt_mvt_userguide.pdf`
+关于SRAM的架构可以参考手册：`work/home/tyiia/common/TSMC_22NM_ULL/sram_sp_hde_svt_mvt/rlp0/doc/sram_sp_hde_svt_mvt_userguide.pdf`或`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/IP/Memory_Compiler/sram_sp_hde_svt_mvt/r1p0/doc/sram_sp_hde_svt_mvt_userguide.pdf`
 
-以下是常见SRAM的ports 和读写时序：
+以下是常见SRAM的ports：
 ![ports](images/image-6.png)
+
 以下是对各个端口的简要解释，具体参见手册：
+
 - CLK：SRAM的时钟，上升沿触发
 - CEN：chip enable，通常置于0，SRAM才能工作
 - A：读或者写的address
@@ -74,6 +90,47 @@ work/home/wumeng/SMIC28HKD_22ULP_INSTALL/SMIC22HKD_22ULP/IP/Sram compiler/
 
 > 再次强调: VDD*, VSS*, EMA*, RET*, STOV这些pin通常容易被忽略，但一定要确保接好，不能floating，不然流片后SRAM不会工作！
 
+- 基本端口
+
+| Port | Width | Direction | Function                     |
+|------|-------|-----------|------------------------------|
+| CLK  | 1     | input     | clock                        |
+| A    | 12    | input     | address (A[0]=LSB)           |
+| D    | 16    | input     | data inputs (D[0]=LSB)       |
+| Q    | 16    | output    | data outputs (Q[0]=LSB)      |
+| CEN  | 1     | input     | chip enable, active LOW      |
+| WEN  | 1     | input     | global write enable, active LOW |
+
+> 注意D，Q的位宽是和memory compiler设置里的number of bits以及multiplixer width,要保持一致。而A决定了存储器深度，和memory compiler设置中的number of words之间相互换算关系是number of words = 2^A_width，即2的指数。
+
+- 其他控制信号
+
+| Port     | Width | Direction | Function                                      |
+|----------|-------|-----------|-----------------------------------------------|
+| RET1N    | 1     | input     | retention mode enable1, active LOW            |
+| EMA      | 3     | input     | extra margin adjustment, EMA[0]=LSB            |
+| EMAW     | 2     | input     | extra margin adjustment write, EMAW[0]=LSB     |
+| TEN      | 1     | input     | test mode enable, active LOW. 0=test operation, 1=normal operation |
+| TA       | 12    | input     | address test input, TA[0]=LSB                  |
+| TD       | 16    | input     | test mode data inputs, TD[0]=LSB               |
+| TCEN     | 1     | input     | chip enable test input, active LOW            |
+| TWEN     | 1     | input     | write enable test inputs, active LOW           |
+| CENY     | 1     | output    | chip enable multiplexer output                 |
+| WENY     | 1     | output    | write enable multiplexer output                |
+| AY       | 12    | output    | address multiplexer output, AY[0]=LSB          |
+| SO       | 2     | output    | scan output bus                               |
+| SI       | 2     | input     | scan input bus                                |
+| SE       | 1     | input     | scan enable input                             |
+| DFTRAMBYP| 1     | input     | test control input                            |
+
+- 电源端口
+
+VDDPE，VDDCE和VSSE，VSSE就是地, VDDPE是periphery power supply pin，即外围电路的电源，而VDDCE是core array power supply pin，即核心阵列的供电，为什么要分成两个电源，是因为对于低功耗设计来说，在SRAM只需要保持数据不需要进行读写操作时，可以通过VDDPE给关掉，只留VDDCE保持数据。
+
+![power](images/image-17.png)
+
+### SRAM的时序
+
 GWEN=1，读数据。读出的数据Q是在ADDR的下一个cycle出现的
 ![gwne1](images/image-7.png)
 
@@ -81,14 +138,18 @@ GWEN=0，写数据。数据D是在ADDR的下一个cycle写入的
 ![gwen0](images/image-8.png)
 
 ### SRAM的仿真
+
 具体例子参见（可以拷贝到自己的路径，尝试类似的仿真）`work/home/tyiia/common/example/sram_22nm`.
+
 里面有两个文件夹：
+
 - sram_sp_4096x16：在此文件夹打开SRAM compiler，并产生所需要的view文件
 - tb：进行简单的仿真验证。
 
 仿真步骤：
-1.	进入tb文件夹， 查看testbench: mem_tb.v
-2.	运行命令：b make compile，会出现以下时序操作
+
+1. 进入tb文件夹， 查看testbench: mem_tb.v
+2. 运行命令：b make compile，会出现以下时序操作
 
 ![alt text](images/image-9.png)
 
