@@ -257,3 +257,129 @@ proc greet {name} {
 }
 greet "Alice"  # 输出：Hello, Alice!
 ```
+
+## 2.1 dbget基本语法与结构
+
+在Tcl语法中，dbGet是Innovus/Encounter等EDA工具中用于查询设计数据库（DB）的核心命令，其功能强大且灵活，主要用于获取物理设计中的对象属性信息。
+
+dbGet基于树状层级结构，通过.逐级访问对象的属性，基本格式为:
+
+```tcl
+dbGet {head | top | selected | objList} [.objType]...[.attrName] [options]
+```
+
+- 初始对象：  
+
+  • head：整个设计数据库的根节点，包含所有底层对象。  
+
+  • top：当前设计的顶层对象（如实例、线网等）。  
+
+  • selected：GUI中选中的对象，需手动选择后使用。  
+  
+## 2.2 dbget常用操作与选项
+
+### 2.2.1 通配符与正则匹配
+
+- 通配符：使用*匹配部分名称，如搜索含clk的线网：  
+
+```tcl
+  dbGet top.nets.name *clk*  ;# 返回所有名称包含"clk"的线网。
+```
+
+- 正则表达式：通过-regexp选项支持复杂匹配，例如：  
+
+```tcl
+  dbGet -regexp top.nets.name {\d$}  ;# 匹配以数字结尾的线网。
+```
+
+### 2.2.2 指针与层级回溯（-p选项）
+
+-p返回对象的指针（内存地址），用于嵌套查询：  
+
+```tcl
+set ptr [dbGet top.insts.name "AND2" -p]  ;# 获取AND2实例的指针
+dbGet $ptr.terms.name                     ;# 通过指针访问其引脚
+```
+
+• -p2、-p3等表示回溯到上两级或三级对象的指针。
+
+### 2.2.3 条件过滤（expression）
+
+通过{条件}筛选结果，例如查找输入数小于10且电源引脚数大于2的单元：  
+
+```tcl
+dbGet head.allCells {.numInputs < 10 && .numPGTerms > 2}.name 。
+```
+
+### 2.2.4 其他实用选项
+
+- -u：去重（返回唯一值）。  
+
+- -v：取反（排除匹配项）。  
+
+- -e：无结果时返回空字符串而非0x0。  
+
+- -i num：仅返回第num个结果（从0开始）。
+
+## 2.3 dbget典型应用场景
+
+### 2.3.1 实例与线网查询
+
+• 列出所有未放置的实例：  
+
+```tcl
+  dbGet [dbGet -p top.insts.pStatus unplaced].name 
+```
+  
+• 获取特定线网的层信息：  
+
+```tcl
+  dbGet [dbGet -p top.nets.name "net1"].wires.layer.name 。
+```
+
+### 2.3.2 物理属性提取
+
+• 获取实例的边界框（Bounding Box）：  
+
+```tcl
+  dbGet top.insts.box  ;# 返回坐标列表{citation:4]
+```
+
+• 查询设计数据库的单位：  
+
+```tcl
+  dbGet head.dbUnits   ;# 返回数据库单位（如纳米）。
+```
+
+### 2.3.3 动态修改属性
+
+结合dbSet命令修改属性，例如固定所有名称含clk的实例：  
+
+```tcl
+dbSet [dbGet -p top.insts.name *clk*].pStatus fixed 。
+```
+
+## 2.4 dbget调试与帮助功能
+
+使用.?h查看属性的简要说明：  
+
+```tcl
+  dbGet selected.?h   ;# 显示选中对象的属性解释。
+```
+
+全属性列表：  
+
+```tcl
+  dbGet selected.??   ;# 列出所有属性及其值。
+```
+
+## 2.5 dbget注意事项
+
+1. 数据类型区分：  
+   • inst为逻辑信息，cell为物理信息，需根据上下文选择属性。  
+
+2. 返回值处理：  
+   • 返回0x0表示无结果，可通过-e选项避免脚本中断。  
+
+3. 性能优化：  
+   • 嵌套查询时优先使用-p减少重复搜索。
