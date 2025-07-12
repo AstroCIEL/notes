@@ -155,3 +155,7 @@ GWEN=0，写数据。数据D是在ADDR的下一个cycle写入的
 
 此仿真仅验证了简单的读写操作，可根据具体需要修改mem_tb。
 并不是所以的EMA*, STOV, RET设置都能进行仿真，参考mem_tb中的设置。
+
+## 参考资料
+
+https://www.cnblogs.com/sasasatori/p/17964224
