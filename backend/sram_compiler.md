@@ -44,7 +44,7 @@ work/home/wumeng/SMIC28HKD_22ULP_INSTALL/SMIC22HKD_22ULP/IP/Sram compiler/
 
 > 阵列行数x列数=总容量=字长x字宽
 
-> 对于tsmc的sram阵列，列数=字长 / mux_width，行数=字宽 x mux_width，即mux_width越大，macro越瘦长。而对于smic则相反，行数=字长 / mux_width，列数=字宽 x mux_width。
+对于tsmc的sram阵列，列数=字长 / mux_width，行数=字宽 x mux_width，即mux_width越大，macro越瘦长。而对于smic则相反，行数=字长 / mux_width，列数=字宽 x mux_width。
 
 ![sram_compiler2](images/image-2.png)
 
@@ -88,7 +88,54 @@ work/home/wumeng/SMIC28HKD_22ULP_INSTALL/SMIC22HKD_22ULP/IP/Sram compiler/
 - EMA, EMAW, EMAS: extra margin adjustment。可以调整SRAM的读取速度。如果不是特别需要调整，可以把这些pin hard-wired到VDD/VSS。但是这些pin一定要接上！不能floating！
 - STOV, RET1N: 同EMA，一定要接上！可以参考我后面的仿真设置。
 
-> 再次强调: VDD*, VSS*, EMA*, RET*, STOV这些pin通常容易被忽略，但一定要确保接好，不能floating，不然流片后SRAM不会工作！
+> 再次强调: VDD*, VSS*, EMA*, RET*, STOV这些pin通常容易被忽略，但一定要确保接好，不能floating，不然流片后SRAM不会工作！具体接0还是1可以参考sram compiler文件夹中的README文件例如`README-tsmc-cln22ul-sram_sp_hde_shvt_mvt.txt`
+
+```text
+Recommended EMA Settings
+    o Default EMA settings are as follows for 0.9v/0.9v voltage domain:
+       EMA[2:0]  = 010 
+       EMAW[1:0] =  00 
+       EMAS      =   0 
+       
+    o Default EMA settings are as follows for 0.8v/0.8v voltage domain:
+       EMA[2:0]  = 100 
+       EMAW[1:0] =  00
+       EMAS      =   0 
+
+    o Default EMA settings are as follows for 0.7v/0.8v voltage domain:
+       EMA[2:0]  = 011 
+       EMAW[1:0] =  00
+       EMAS      =   0
+     
+    o Default EMA settings are as follows for 0.6v/0.8v voltage domain:
+       EMA[2:0]  = 001 
+       EMAW[1:0] =  01
+       EMAS      =   0
+
+    o Default Read/write assist settings are as follows for 0.9v/0.9v voltage domain:
+       WABL=1 
+       WABLM[2:0] = 000 
+       RAWL = 0  
+       RAWLM[1:0] = 00 
+       
+    o Default Read/write assist settings are as follows for 0.8v/0.8v voltage domain:
+       WABL=1 
+       WABLM[2:0] = 001 
+       RAWL = 0
+       RAWLM[1:0] = 00
+
+    o Default Read/write assist settings are as follows for 0.7v/0.8v voltage domain:
+       WABL=1 
+       WABLM[2:0] = 001 
+       RAWL = 0
+       RAWLM[1:0] = 00   
+
+     o Default Read/write assist settings are as follows for 0.6v/0.8v voltage domain:
+       WABL=1 
+       WABLM[2:0] = 011 
+       RAWL = 0
+       RAWLM[1:0] = 00
+```
 
 - 基本端口
 
@@ -158,4 +205,4 @@ GWEN=0，写数据。数据D是在ADDR的下一个cycle写入的
 
 ## 参考资料
 
-https://www.cnblogs.com/sasasatori/p/17964224
+[sram compiler使用](https://www.cnblogs.com/sasasatori/p/17964224)
