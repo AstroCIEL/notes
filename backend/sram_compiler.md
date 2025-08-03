@@ -7,30 +7,61 @@
 - GDS（用于最终合成）
 - LIB（用于后端timing closure）
 
-![view](images/image-15.png)
+| 文件类型                            | 文件名格式                                 |
+| ------------------------------- | ------------------------------------- |
+| Verilog Model                   | `<instance_name>.v`                   |
+| Verilog RTL model               | `<instance_name>_rt1.v`               |
+| Liberty model for each corner a | `<instance_name>_<corner>.1ib`        |
+| LEF footprint                   | `<instance_name>.lef`                 |
+| LEF antenna                     | `<instance_name>_ant.lef`             |
+| LEF antenna (C1F)               | `<instance_name>_ant.c1f`             |
+| TetraMAX                        | `<instance_name>.tv`                  |
+| GDSII layout                    | `<instance_name>.gds2`                |
+| LVS netlist                     | `<instance_name>.cdl`                 |
+| FastScan                        | `<instance_name>.mdt`                 |
+| Bitmap                          | `<instance_name>.bitmap`              |
+| ECSM-Timing                     | `<instance_name>.1ib-ecsm_t`          |
+| CTL model                       | `<instance_name>.ctl`                 |
+| CPF model                       | `<instance_name>.cpf`                 |
+| Emulation model                 | `<instance>.memlib`                   |
+| Tessent memory BIST model       | `<instance>_emulation.v`              |
+| Apache AVM                      | `<instance_name>.avm`                 |
+| CCS Timing                      | `<instance_name>_<corner>.1ib_ccs_t` |
+| PostScript                      | `<instance_name>_<corner>.ps`         |
+| ASCII datatable                 | `<instance_name>_<corner>.dat`        |
 
 ## 执行文件路径
 
 ```text
-# tsmc22
-work/home/tyiia/common/TSMC_22NM_ULL/sram_sp_hde_svt_mvt/rlp0/bin/sram_sp_hde_svt_mvt
-# or 
-/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/IP/Memory_Compiler/sram_sp_hde_svt_mvt/r1p0/bin/sram_sp_hde_svt_mvt
+###### TSMC22 ######
 
-# simc22
+# NCC服务器
+work/home/tyiia/common/TSMC_22NM_ULL/sram_sp_hde_svt_mvt/rlp0/bin/sram_sp_hde_svt_mvt
+
+# T1CentOS/T2CentOS服务器
+/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/IP/Memory_Compiler/
+
+# EDA2服务器
+/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Memory_Compiler
+
+##### simc22 ##### 
+# NCC服务器
 /ftp/Design_rule/SMIC/SMIC28HKD_22ULP/Sram compiler/
-# or 
 work/home/wumeng/SMIC28HKD_22ULP_INSTALL/SMIC22HKD_22ULP/IP/Sram compiler/
+
+##### UMC28 #####
+# T1CentOS服务器SRAM Compiler路径
+/DISK2/Tech_PDK/XIATRI_28nm_RRAM/IP/Memory_Compiler
 ```
 
-- 对于tsmc22，在终端输入`ksh ${可执行文件的路径}`，就可以打开sram compiler图形界面
+- 对于tsmc22，在终端输入`ksh ${可执行文件的路径}`，就可以打开sram compiler图形界面。{可执行文件路径}类似于`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/IP/Memory_Compiler/sram_sp_hde_svt_mvt/r1p0/bin/sram_sp_hde_svt_mvt`
 - 对于smic22，进入上述文件夹，可以看到A001和A000两个文件夹（或压缩包）。A001是2024三月发布的，A000是2023十一月发布的。进入任意一个文件夹（例如A000），有两个文件夹（或压缩包），一个是FE，一个是FB。将它们解压（如果还没解压的话）。FB里面是提供了gds的生成库，需要复制到FE的文件夹里面。然后再以和TSMC22nm相似的启动方式打开FE文件夹里的sram_sp_hde_svt_mvt,启动后，可以看到sram compiler的GUI如下页：
 
 ![sram_compiler](images/image.png)
 
 > 为什么会有FB和FE两个文件夹？可以理解为厂商提供sram compiler是将生成不同view的功能分割开来的，例如给你一个压缩包，里面有可以打开图形界面的可执行文件，但是这个压缩包里面只给你提供了几个可以生成特定几个view的库，这样虽然你可以打开sram compiler图形界面，但是生成view的功能是不齐全的。所以现在给了两个压缩包，里面提供了不同的view生成所需的库文件，所以需要将两个压缩包的文件融合起来，并且还需要增改一些库文件的声明，这样最后打开的图形界面就有齐全的view生成功能。
 
-这里仅安装了single-port (SP)的SRAM compiler，这也是最常用的SRAM，同一个时钟内仅能读或者写。特殊情况下，可以使用Dual-port SRAM，这种SRAM可以同时读写，但是同样容量下面积的成本也会接近double，所以我们不会常用。
+single-port (SP)的SRAM compiler是最常用的SRAM，同一个时钟内仅能读或者写。特殊情况下，可以使用Dual-port SRAM，这种SRAM可以同时读写，但是同样容量下面积的成本也会接近double，所以我们不会常用。
 
 ## 产生view文件
 
@@ -186,17 +217,17 @@ GWEN=0，写数据。数据D是在ADDR的下一个cycle写入的
 
 ### SRAM的仿真
 
-具体例子参见（可以拷贝到自己的路径，尝试类似的仿真）`work/home/tyiia/common/example/sram_22nm`.
+具体例子参见EDA02服务器（可以拷贝到自己的路径，尝试类似的仿真）/data/home/rh_xu30/work/share/sram_tsmc22
+里面有三个文件夹：
 
-里面有两个文件夹：
-
-- sram_sp_4096x16：在此文件夹打开SRAM compiler，并产生所需要的view文件
-- tb：进行简单的仿真验证。
+- rtl：在此文件夹打开SRAM compiler，并产生所需要的view文件（目前已有verilog文件）
+- verify：testbench。
+- work：在此处启动仿真。仿真前查看list.f是否完整包含了需要仿真的verilog
 
 仿真步骤：
 
-1. 进入tb文件夹， 查看testbench: mem_tb.v
-2. 运行命令：b make compile，会出现以下时序操作
+1. 进入verify文件夹， 查看testbench: tb_sram_sp_2048_32.v
+2. 进入work文件夹，运行命令：make all，会出现以下时序信息
 
 ![alt text](images/image-9.png)
 
