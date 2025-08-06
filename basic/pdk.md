@@ -80,6 +80,8 @@ TD-LO28-XC-2066-V1 # calibre XRC 使用说明
 | v | number of 2X top metal layers | 两倍厚顶层铜金属层数 |
 | u | type of AL, 1 type AL14.5k, 2 type AL28k | 顶层铝金属的厚度，1=14.5KÅ，2=28KÅ |
 
+![alt text](images/image-6.png)
+
 ### 示例一
 
 ```text
