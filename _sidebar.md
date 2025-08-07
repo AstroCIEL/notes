@@ -1,10 +1,11 @@
 <!-- 侧边栏 docs/_sidebar.md -->
 
 - FrontEnd
-  - [vcs&verdi](/frontend/vcs_verdi.md)
-  - [spyglass](/frontend/spyglass.md)
-  - [design compiler](/frontend/design_compiler_synthesis.md)
-  - [lib file](/frontend/lib.md)
+  - [VCS&Verdi](/frontend/vcs_verdi.md)
+  - [Spyglass](/frontend/spyglass.md)
+  - [DesignCompiler](/frontend/design_compiler_synthesis.md)
+  - [Genus](frontend/genus_synthesis.md)
+  - [.lib file](/frontend/lib.md)
   - [AMS](/frontend/AMS.md)
 
 - BackEnd
@@ -12,7 +13,10 @@
   - [SramCompiler](/backend/sram_compiler.md)
   - [Calibre](/backend/calibredrv.md)
   - [PEX](/backend/pex.md)
-  - [post-sim](/backend/post-sim.md)
+  - [PostSim](/backend/post-sim.md)
+  - [I/O](/backend/IO.md)
+  - [SealRing](/backend/sealring.md)
+  - [Dummy](/backend/dummy.md)
 
 - RTL
   - [IO_TOP](/rtl/IO_TOP.md)
@@ -22,11 +26,11 @@
   - [DCO](/rtl/DCO.md)
 
 - Basic
-  - [flow](/basic/asic_flow.md)
-  - [verilog](/basic/verilog.md)
+  - [Flow](/basic/asic_flow.md)
+  - [Verilog](/basic/verilog.md)
   - [tcl](/basic/tcl.md)
-  - [bash](/basic/linux.md)
-  - [makefile](/basic/makefile.md)
+  - [Bash](/basic/linux.md)
+  - [Makefile](/basic/makefile.md)
   - [PDK](/basic/pdk.md)
   - [EDA](/basic/eda.md)
   - [tips](/tape-out/tips.md)

@@ -61,7 +61,9 @@ TSMC22提供了SEAL RING的sample，路径在`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/D
 
 ![alt text](images/image-46.png)
 
-先根据计算的结果摆放四个角(使用CSR1DMY,CSR2DMY),然后在四条边上摆放多个UCSRN_DPO_DOD(宽度为5.4),最后剩余的距离用UCSRN_NOVIA_DPO_DOD补全.
+先根据计算的结果摆放四个角(使用CSR1DMY,CSR2DMY),然后在四条边上摆放多个UCSRN_DPO_DOD(宽度为5.4),最后剩余的距离用UCSRN_NOVIA_DPO_DOD补全.需要注意，相邻的UCSRN_DPO_DOD之间需要严丝合缝，不能留空也不能有重叠；余空用UCSRN_NOVIA_DPO_DOD补齐的时候，需要和最后一个UCSRN_DPO_DOD严丝合缝，不能留空也不能重叠，但是可以和CSR1DMY/CSR2DMY有重叠。观察UCSRN_NOVIA_DPO_DOD的版图可以发现，它一边是有via的，一边没有via。有via的那一边要严丝合缝贴着UCSRN_DPO_DOD，而另一边则可以和CSR1DMY/CSR2DMY重合。否则会出现drc问题。
+
+![alt text](images/image-67.png)
 
 ![alt text](images/image-47.png)
 
