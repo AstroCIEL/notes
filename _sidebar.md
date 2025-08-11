@@ -17,6 +17,7 @@
   - [I/O](/backend/IO.md)
   - [SealRing](/backend/sealring.md)
   - [Dummy](/backend/dummy.md)
+  - [DRC](/backend/DRC.md)
 
 - RTL
   - [IO_TOP](/rtl/IO_TOP.md)
@@ -32,6 +33,7 @@
   - [Bash](/basic/linux.md)
   - [Makefile](/basic/makefile.md)
   - [PDK](/basic/pdk.md)
+  - [layout](/basic/layout.md)
   - [EDA](/basic/eda.md)
   - [tips](/tape-out/tips.md)
 <!-- 以下略 -->

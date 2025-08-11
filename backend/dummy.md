@@ -17,6 +17,10 @@ T1CentOS/T2CentOS服务器上，在工艺库安装路径`/DISK2/Tech_PDK/TSMC_22
 
 该脚本也可以在示例pr模板`/DISK1/home/rh_xu30/work/share/innovus_io_template/layout/dummy`中找到。会用到的脚本文件有两个：`Dummy_BEOL_Calibre_22nm_001.13a`,`Dummy_FEOL_Calibre_22nm_001.13a`。
 
+### 推荐顺序
+
+![alt text](images/image-72.png)
+
 ### FEOL，BEOL区别
 
 前道工艺（FEOL）是集成电路制造的第一个主要阶段，主要目标是在半导体晶圆上完成各类器件的制造和图案化。这些器件包括晶体管、电容、电阻等，是构成电路功能的基本单元。FEOL从裸片晶圆开始，最终完成所有器件的加工和结构搭建。FEOL中常见的关键工艺步骤包括

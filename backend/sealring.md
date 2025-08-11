@@ -71,4 +71,10 @@ TSMC22提供了SEAL RING的sample，路径在`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/D
 
 ![alt text](images/image-48.png)
 
+### 画层
 
+|name|purpose|datatype|description|
+|--|--|--|--|
+|SEALRING_ORI|drawing|0|INITIAL SR Region, is used to cover the outer seal-ring (2um) and inner seal-ring (6 um)|
+|SEALRING_DB|drawing1|1|SLDB(Scribe line dummy bar) Region, is used to cover SLDB (3.5um duplicate)|
+|SEALRING_ALL|drawing2|2|SR+SLDB+SR_ISO Region, is used to cover SEALRING region, SLDB, CSR, and seal-ring enhanced zone|
