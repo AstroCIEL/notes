@@ -112,3 +112,39 @@ chmod -R a+rx .
 chmod -R u+rwx,g+rx,o+rx . # 或
 chmod -R 755 .
 ```
+
+## 别名`alias`
+
+```bash
+# 查看当前所有别名
+alias
+
+# 创建别名
+alias ll='ls -alF'
+unalias ll # 删除别名
+
+# 永久生效
+echo "alias ca='conda activate'" >> ~/.bashrc
+echo "alias nv='nvidia-smi'" >> ~/.bashrc
+echo "alias wnv='watch -n 1 nvidia-smi'" >> ~/.bashrc
+echo "alias pi='pip install'" >> ~/.bashrc
+echo "alias py='python'" >> ~/.bashrc
+echo "alias up='cd ..'" >> ~/.bashrc
+echo "alias tnew='tmux new -s'" >> ~/.bashrc
+echo "alias tkill='tmux kill-session -t'" >> ~/.bashrc
+echo "alias tattach='tmux attach -t'" >> ~/.bashrc
+echo "alias pfind='ps aux | grep'" >> ~/.bashrc
+source ~/.bashrc     # 立即生效 
+```
+
+## nvidia-smi
+
+```bash
+# 查看GPU信息
+nvidia-smi
+
+# 持续检测GPU信息
+nvidia-smi -l 1
+# or
+watch -n 1 nvidia-smi
+```
