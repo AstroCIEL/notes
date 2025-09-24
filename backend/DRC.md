@@ -2,74 +2,7 @@
 
 ## 准备工作
 
-### 在virtuoso显示calibre选项卡
-
-如果virtuoso界面没有calibre选项卡，则可以在工作目录下创建一个.cdsinit文件并写入以下内容：
-
-```text
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;
-; check CALIBRE_HOME
-;
-cal_home=getShellEnvVar("CALIBRE_HOME")
-if( cal_home==nil then
-    cal_home=getShellEnvVar("MGC_HOME")
-    if( cal_home!=nil then
-        printf("// CALIBRE_HOME environment variable not set; setting it to value of MGC_HOME\n");
-    )
-)
-
-if( cal_home!=nil && isDir(cal_home) && isReadable(cal_home) then
-
-    ; Load calibre.skl or calibre.4.3.skl, not both!
-
-    if( getShellEnvVar("MGC_CALIBRE_REALTIME_VIRTUOSO_ENABLED") && 
-        getShellEnvVar("MGC_REALTIME_HOME") && dbGetDatabaseType()=="OpenAccess" then
-      load(strcat(getShellEnvVar("MGC_REALTIME_HOME") "/lib/calibre.skl"))
-    else
-      ; Load calibre.skl for Cadence versions 4.4 and greater
-      load(strcat(cal_home "/lib/calibre.skl"))
-    )
-
-    ;;;;Load calibre.4.3.skl for Cadence version 4.3
-    ;;; load(strcat(cal_home "/lib/calibre.4.3.skl"))
-
-else
-
-    ; CALIBRE_HOME is not set correctly. Report the problem.
-
-    printf("//  Calibre Error: Environment variable ")
-
-    if( cal_home==nil || cal_home=="" then
-        printf("CALIBRE_HOME is not set.");
-    else
-        if( !isDir(cal_home) then
-            printf("CALIBRE_HOME does not point to a directory.");
-        else
-            if( !isReadable(cal_home) then
-                printf("CALIBRE_HOME points to an unreadable directory.");
-            )
-        )
-    )
-    printf(" Calibre Skill Interface not loaded.\n")
-
-    ; Display a dialog box message about load failure.
-
-    hiDisplayAppDBox(
-        ?name           'MGCHOMEErrorDlg
-        ?dboxBanner     "Calibre Error"
-        ?dboxText       "Calibre Skill Interface not loaded."
-        ?dialogType     hicErrorDialog
-        ?dialogStyle    'modal
-       ?buttonLayout   'Close
-    )
-)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-```
-
-这样就可以调用calibre的功能了。
+如果virtuoso界面没有calibre选项卡，参见[virtuoso](./virtuoso.md/##在virtuoso显示calibre选项卡)
 
 ### 说明文档
 

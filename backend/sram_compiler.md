@@ -59,9 +59,11 @@ work/home/wumeng/SMIC28HKD_22ULP_INSTALL/SMIC22HKD_22ULP/IP/Sram compiler/
 
 ![sram_compiler](images/image.png)
 
-> 为什么会有FB和FE两个文件夹？可以理解为厂商提供sram compiler是将生成不同view的功能分割开来的，例如给你一个压缩包，里面有可以打开图形界面的可执行文件，但是这个压缩包里面只给你提供了几个可以生成特定几个view的库，这样虽然你可以打开sram compiler图形界面，但是生成view的功能是不齐全的。所以现在给了两个压缩包，里面提供了不同的view生成所需的库文件，所以需要将两个压缩包的文件融合起来，并且还需要增改一些库文件的声明，这样最后打开的图形界面就有齐全的view生成功能。
+> （For SMIC）为什么会有FB和FE两个文件夹？可以理解为厂商提供sram compiler是将生成不同view的功能分割开来的，例如给你一个压缩包，里面有可以打开图形界面的可执行文件，但是这个压缩包里面只给你提供了几个可以生成特定几个view的库，这样虽然你可以打开sram compiler图形界面，但是生成view的功能是不齐全的。所以现在给了两个压缩包，里面提供了不同的view生成所需的库文件，所以需要将两个压缩包的文件融合起来，并且还需要增改一些库文件的声明，这样最后打开的图形界面就有齐全的view生成功能。
 
 single-port (SP)的SRAM compiler是最常用的SRAM，同一个时钟内仅能读或者写。特殊情况下，可以使用Dual-port SRAM，这种SRAM可以同时读写，但是同样容量下面积的成本也会接近double，所以我们不会常用。
+
+hde=high density, uhde=ultrahigh density. SVT-MVT indicates that logic SVT is used for BASE mode and MVT is used in LL(low leakage) & HP(high performance) mode. 随着工艺的发展，静态功耗影响非常大，所以选择合适的VT cell，对功耗影响很大，ulvt功耗是lvt的5倍，是svt的10倍，但是这是用时序换功耗。
 
 ## 产生view文件
 
@@ -75,7 +77,7 @@ single-port (SP)的SRAM compiler是最常用的SRAM，同一个时钟内仅能�
 
 > 阵列行数x列数=总容量=字长x字宽
 
-对于tsmc的sram阵列，列数=字长 / mux_width，行数=字宽 x mux_width，即mux_width越大，macro越瘦长。而对于smic则相反，行数=字长 / mux_width，列数=字宽 x mux_width。
+对于tsmc的sram阵列，列数=字长 / mux_width，行数=字宽 x mux_width，即mux_width越大，macro越瘦长。而对于smic则相反，行数=字长 / mux_width，列数=字宽 x mux_width。mux越大，速度越快，面积越大。频率要求低时，一般是500M以下时，可以选择column较小的，降低面积。
 
 ![sram_compiler2](images/image-2.png)
 

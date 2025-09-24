@@ -148,3 +148,26 @@ nvidia-smi -l 1
 # or
 watch -n 1 nvidia-smi
 ```
+
+## docker
+
+安装完docker记得先更新镜像源，否则无法下载任何镜像。
+
+```bash
+########image
+docker search [镜像名]
+docker pull [镜像名]:[标签]  # 默认标签为 latest
+docker images  # 查看本地镜像
+docker rmi [镜像ID或镜像名]  # 删除镜像
+
+########container
+docker run -it --name [容器名] [镜像名] /bin/bash  # 运行容器
+docker ps -a  # 查看所有容器
+docker start [容器ID或容器名]  # 启动容器
+docker stop [容器ID或容器名]  # 停止容器
+docker restart [容器ID或容器名]  # 重启容器
+docker rm [容器ID或容器名]  # 删除容器
+docker exec -it [容器ID或容器名] /bin/bash  # 在容器运行时进入其命令行
+docker logs [容器容器ID或容器名名]  # 查看容器日志
+docker stats [容器ID或容器名]  # 查看容器资源占用情况
+```
