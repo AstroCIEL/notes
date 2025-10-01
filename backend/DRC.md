@@ -14,7 +14,7 @@ T1CentOS/T2CentOS服务器上，在工艺库安装路径`/DISK2/Tech_PDK/TSMC_22
 
 0.  Prepare drc rule file, and **change the header** in it. Make sure the configurations are suited for your design(e.g. whether it is full_chip, whether it is with seal_ring, the boudary of the chip).
 
-1.  In the layout window, go to Calibre → Run DRC.
+1.  In the layout window, go to Calibre → Run nmDRC.
 
 2.  If you have already created the runset, skip to Step 9. Otherwise, close the "Load Runset File" form.
 
@@ -234,14 +234,28 @@ NW.S.2 { @ Space of 2 NW1V with different potentials >= 0.8
 }
 ```
 
-![alt text](image.png)
+![alt text](images/image-77.png)
 
 类似于[IC训练营项目典型Calibre DRC案例](https://zhuanlan.zhihu.com/p/567673036)中分析的原因，DRC报错直接原因是检测到不同voltage的NW间距小于0.8，但是按理说std cell就是这么摆的，摆完就是这个间距。因此可以推断DRC将两条VDD rail识别成了不同的电压。为什么会识别成不同的电压，进一步观察我们可以发现这一块区域的VDD power rail没有跟任何power stripe或者power ring接上，因此工具无法识别他们的电压（是否一致）。由此发现pr过程的问题，由于这一块区域是core区域右侧，sram和power ring的小缝隙，这一部分没有打到任何纵向的stripe，导致VDD rail没有可以接上的纵向stripe，因此悬空。需要重新做一次pr
 
-![alt text](image-1.png)
+![alt text](images/image-78.png)
 
 #### SR.R.1, SLR.EN.1, CSR.EN.x
 
 没有正确地识别seal ring或者边界。对于SR.R.1中提到的三种seal ring层是不需要手动加的，本就包含在CSR1DMY，CSR2DMY等模块中。消除这个DRC的方法是手动在顶层版图画一个prBndry矩形将chip window包住，然后在drc文件中开启#DEFINE UseprBoundary选项
 
-#### 
+#### Mx.S.x
+
+![alt text](images/image-79.png)
+
+两条平行长度超过1.5um的矩形条之间的距离应该要大于0.5，而这里只有0.2。
+
+![alt text](images/image-80.png)
+
+两条平行长度超过0.22um的矩形条之间的距离应该要大于0.1。这里是一个M6金属矩形和VIA2_7通孔中的M6金属之间距离不满足情况。
+
+这些问题通常是在手工连接io电源引脚和core ring的时候引起的，因此在画这些连接线的时候需要注意。可以在画版图时打开DRC强制间距检查选项：
+
+![alt text](images/image-81.png)
+
+并且建议在加dummy前就进行一次drc检查来清掉该过程中可能引入的drc错误。

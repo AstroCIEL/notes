@@ -20,6 +20,12 @@
 - Guard ring通常用于电路内部block与block之间的隔离，所用层通常是nwell 或psub，或两者一同使用。
 - Scribe line，是把芯片从晶圆上切下来的线，是要实际走刀子的地方，而Seal ring是围在芯片周围的一圈从衬底到最上层金属全部都打一圈的保护圈。
 
+|name|purpose|datatype|description|
+|--|--|--|--|
+|SEALRING_ORI|drawing|0|INITIAL SR Region, is used to cover the outer seal-ring (2um) and inner seal-ring (6 um)|
+|SEALRING_DB|drawing1|1|SLDB(Scribe line dummy bar) Region, is used to cover SLDB (3.5um duplicate)|
+|SEALRING_ALL|drawing2|2|SR+SLDB+SR_ISO Region, is used to cover SEALRING region, SLDB, CSR, and seal-ring enhanced zone|
+
 ### 说明文件
 
 在工艺库安装路径`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/Doc/CL-DR/TN22CLDR001_1_5.pdf`第4.5.72节
@@ -70,11 +76,3 @@ TSMC22提供了SEAL RING的sample，路径在`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/D
 完成后,再新建一个cell,将iotop和seal ring放在一起即可
 
 ![alt text](images/image-48.png)
-
-### 画层
-
-|name|purpose|datatype|description|
-|--|--|--|--|
-|SEALRING_ORI|drawing|0|INITIAL SR Region, is used to cover the outer seal-ring (2um) and inner seal-ring (6 um)|
-|SEALRING_DB|drawing1|1|SLDB(Scribe line dummy bar) Region, is used to cover SLDB (3.5um duplicate)|
-|SEALRING_ALL|drawing2|2|SR+SLDB+SR_ISO Region, is used to cover SEALRING region, SLDB, CSR, and seal-ring enhanced zone|

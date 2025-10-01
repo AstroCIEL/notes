@@ -23,7 +23,7 @@
 
 ### 分类
 
-对于TSMC22工艺，常用的I/O cell库为`tphn22ullgv2od3_c171206_120a`，其说明文档datasheet在T1CentOS服务器路径`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/IP/Std_IO/tphn22ullgv2od3_c171206_120a/digital/Documentation/documents/tphn22ullgv2od3_c171206_120a`。常用的有以下几种类别：
+对于TSMC22工艺，常用的I/O cell库为`tphn22ullgv2od3_c171206_120a`，其说明文档datasheet在T1CentOS服务器路径`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/IP/Std_IO/tphn22ullgv2od3_c171206_120a/digital/Documentation/documents/tphn22ullgv2od3_c171206_120a`。对于io整体的说明以及介绍（TSMC）可以在网上找**TSMC Universal Standard I/O Library General Application Note**来阅读。常用的有以下几种类别：
 
 | 类别 | 典型Cell | 核心功能 | 尺寸 |
 | :--- | :--- | :--- | :--- |
@@ -115,6 +115,9 @@ PDDWUW0408SDGH_H I_tdo (
 
 ![alt text](images/image-56.png)
 
+立体图：
+![alt text](images/image-75.png)
+
 ### 多电源域划分
 
 设计中往往会为不同的模块使用各自的电源，例如希望供给PLL的电源和标准数字单元的电源是分开的，这样不仅可以更精细地控制不同模块的电压，还可以测出不同模块分别的能耗。此时就需要进行电源域的划分。实现单独供电有两种方式：
@@ -133,16 +136,20 @@ PDDWUW0408SDGH_H I_tdo (
 - PVDD2DGZ向外可接pad接到外部电源，其内部则接在io ring的VDDPST环中，电压使用io电压如2.5V，为周围的所有的io cell供电。最好每一个电源域都配有这样的cell（连到外部电源VDD_IO）来为周围的io供电，但在外部邦线的时候不同电源域的供电VDD_IO可以连到一起
 - PVSS2DGZ向外可接pad接到外部地，其内部则接在io ring的VSSPST环中
 - PRCUT可以切割VDDPST，VSSPST，VDD，从而隔离不同电源域。但是需要注意，VSS是没有被PRCUT隔断的
+
 ![alt text](images/image-58.png)
+
+在物理划分（两个PRCUT之间的部分）出的每一个电源域上均需要至少有一组VDD_IO（PVDD2DGZ, PVSS2DGZ）以给IO供电，一个POC PAD（PVDD2POC）进行电压波动保护。
 
 #### 法2：PVDD1ANA/PVDD2ANA提供独立模拟电源
 
 在法1中，可以看到io的VDD以及VSS都是连在一起的，无法做到一个io pad单独给出一个和其他io隔离的电源。但是根据PVDD1ANA/PVDD2ANA的版图，可以看出他们有自己单独的AVDD信号，可用于单独供电：
 
 ![alt text](images/image-59.png)
+
 ![alt text](images/image-60.png)
- 
-在物理划分（两个PRCUT之间的部分）出的每一个电源域上均需要至少有一组VDD_IO（PVDD2DGZ, PVSS2DGZ）以给IO供电，一个POC PAD（PVDD2POC）进行电压波动保护。
+
+一般情况下core中需要模拟供电/单独供电使用PVDD1ANA，地则可以使用数字地（PVSS1DGZ），与数字模块共用。这种情况下不需要加PCLAMP来防止ESD问题。但是如果同时使用了PVDD1ANA和PVSS1ANA，即模拟模块也使用了模拟地，则需要加PCLAMP来防止ESD问题。具体方法是将PVDD1ANA的AVDD和PCLAMP的VDDESD相连，PVSS1ANA的AVSS和PCLAMP的VSSESD相连。然后将PCLAMP的VDDESD/VSSESD轨和core电压VDD/VSS轨相接。PCLAMP只能用于一对PVDD1ANA/PVSS1ANA.
 
 ### PVDD2POC
 
@@ -158,10 +165,11 @@ PCORNER置于四角，使得VDD，VSS，VDDPST，VSSPST，POC形成的io ring保
 
 ![alt text](images/image-62.png)
 
-此外，由于PAD比较大，而io cell相对比PAD窄，所以如果一个io cell配一个PAD，为了满足PAD之间的间距（至少不能重合），io cell之间可能会出现空隙。此时就需要PFILLER来填充这些空隙，保持io ring（包括VDD，VSS，VDDPST，VSSPST，POC）的完整联通。PFILLER有多种规格，用于填充不同大小的空隙。
+此外，由于PAD比较大，而io cell相对比PAD窄，所以如果一个io cell配一个PAD，为了满足PAD之间的间距（至少不能重合），io cell之间可能会出现空隙。此时就需要PFILLER来填充这些空隙，保持io ring（包括VDD，VSS，VDDPST，VSSPST，POC）的完整联通。PFILLER有多种规格，用于填充不同大小的空隙。填充电源io的间隙，可以使用PFILLER，也可以使用不外接pad的PVDD1DGZ/CDG或PVDD2DGZ/CDG，他们相较于PFILEER还多了ESD保护电路，因此是更为推荐的。唯一的缺点是增加了静态漏电。
 
 ![alt text](images/image-63.png)
 
+![alt text](images/image-76.png)
 
 ## 4. 物理隔离I/O
 
