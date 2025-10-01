@@ -19,6 +19,7 @@
   - [SealRing](/backend/sealring.md)
   - [Dummy](/backend/dummy.md)
   - [DRC](/backend/DRC.md)
+  - [LVS](/backend/LVS.md)
 
 - RTL
   - [IO_TOP](/rtl/IO_TOP.md)
