@@ -1,4 +1,6 @@
-# DRC(calibre flow)
+# DRC & antenna(calibre flow)
+
+DRC是检查版图是否符合物理制造的规则，antenna（天线效应） DRC则是检查天线效应的规则。广义的DRC应该包含了这两者，但是通常语境下当我们提到DRC的时候仅指不包含ant-DRC的检查，而ant-DRC则特指天线效应的检查，因为这两者使用不同的规则文件。以下描述主要是针对DRC的检查，对于ant-DRC的检查流程几乎完全一样，只是更换了规则文件而已。
 
 ## 准备工作
 
@@ -9,6 +11,8 @@
 T1CentOS/T2CentOS服务器上，在工艺库安装路径`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/Doc/CL-DR/TN22CLDR001_1_5.pdf`。在DRC debug的时候对任何violation有问题应该在该文档中查找说明以及图例。
 
 用于DRC的规则文件则可以在工艺库目录中找到：`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/PDK/PDK_20211230_LO_0.8V_2.5V_1P9M_6X1Z1U_UT_ALRDL_StarRC_QRC/Calibre/drc/calibre.drc`。可以拷贝一份到自己的工作目录，对其中的文件头设置进行修改，用于当前设计的DRC。
+
+用于ant-DRC的规则文件则是同一个目录下的`CLN22ULP_9M_001_ANT.15a`文件。
 
 ## 标准操作步骤
 
@@ -211,9 +215,10 @@ LAYOUT CLONE ROTATED PLACEMENTS YES  // For DFM PROPERTY
 
 - All "CSR.*" (Corner Stress Relief) errors can be ignored **if it's not the entire chip**. Metals and vias are not allowed in chip corners, but we are not creating the entire chip.
 - Any "*.EN" (Enclosure) errors **regarding chip edge** can be waived; all others should be resolved according to the rule described in the explanation window.
-- All "MOM.*" errors can be waived if no MOM caps are used at all in the design.
+- All "MOM.*" like "MOM.R.2" errors can be waived if no MOM caps are used at all in the design.
 - All "ESD.*" errors can be waived.
-- All "*.WARN" errors can be waived.
+- All "*.WARN" like "AN.WARN.1", "MATCH.WARN.1" errors can be waived.
+- For block design(not entire chip), "OD.S.14", "\*.DN.\*", "DM*.R.1" can be waived.
 
 #### can't waive
 
@@ -258,4 +263,6 @@ NW.S.2 { @ Space of 2 NW1V with different potentials >= 0.8
 
 ![alt text](images/image-81.png)
 
-并且建议在加dummy前就进行一次drc检查来清掉该过程中可能引入的drc错误。
+并且建议在加dummy前就进行一次drc检查来清掉该过程中可能引入的drc错误，因为如果在加dummy后再检查出来这样的错误然后改版图，就需要再重新加一次dummy。
+
+> 再没有加dummy前，DRC违例中的"\*.DN.\*"问题都不用管

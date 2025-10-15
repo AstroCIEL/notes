@@ -1,5 +1,17 @@
 # Cadence Virtuoso使用技巧
 
+## 导入gds文件
+
+- 在virtuoso菜单栏中 file-import-stream ,流文件导入：
+
+  ![virtuoso](images/image-3.png)
+
+- stream file 选择需要导入的GDS或GDSII文件（如果在目标文件夹下找不到.gds2类型文件，可以将文件类型选择为all）, library 可输入新库的名字或者选择导入已有库中。一般导入gds后会产生很多个cell，因此在不确定的情况下建议是新建一个库然后再导入到新建的库中。
+
+  ![virtuoso2](images/image-4.png)
+
+- top cell一般无需指定，缺省即可；如果目标导入的库再创建时已经绑定了工艺库，那么此处attach tech library也可以直接缺省。最后直接点击tranlate即可。注意在弹出的”你是否要查看警告或者报错信息”的弹窗中，请尽量选择No，因为选择Yes有可能会导致服务器崩溃（实测，但是原因未知）。如果要查看translate过程中的warning则可以去查看StreamIn.log文件。
+
 ## 修改默认仿真波形曲线风格
 
 使用ADE L仿真后得到的波形曲线有可能默认是虚线，非常不清晰。因此可以修改默认仿真波形曲线风格。
