@@ -38,4 +38,5 @@
   - [layout](/basic/layout.md)
   - [EDA](/basic/eda.md)
   - [tips](/tape-out/tips.md)
+  - [checklist](/tape-out/checklist.md)
 <!-- 以下略 -->
