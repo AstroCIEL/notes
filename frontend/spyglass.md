@@ -7,7 +7,7 @@ SPYGLASS是很高效的RTL分析和CDC检查工具，可以有效的帮助规避
 ### 打开gui
 
 ```bash
-cd spyglass # void work dir
+cd spyglass # empty work dir
 b spyglass # gui
 ```
 

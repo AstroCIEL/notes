@@ -107,6 +107,7 @@ hde=high density, uhde=ultrahigh density. SVT-MVT indicates that logic SVT is us
 关于SRAM的架构可以参考手册：`work/home/tyiia/common/TSMC_22NM_ULL/sram_sp_hde_svt_mvt/rlp0/doc/sram_sp_hde_svt_mvt_userguide.pdf`或`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/IP/Memory_Compiler/sram_sp_hde_svt_mvt/r1p0/doc/sram_sp_hde_svt_mvt_userguide.pdf`
 
 以下是常见SRAM的ports：
+
 ![ports](images/image-6.png)
 
 以下是对各个端口的简要解释，具体参见手册：
@@ -212,9 +213,11 @@ VDDPE，VDDCE和VSSE，VSSE就是地, VDDPE是periphery power supply pin，即�
 ### SRAM的时序
 
 GWEN=1，读数据。读出的数据Q是在ADDR的下一个cycle出现的
+
 ![gwne1](images/image-7.png)
 
 GWEN=0，写数据。数据D是在ADDR的下一个cycle写入的
+
 ![gwen0](images/image-8.png)
 
 ### SRAM的仿真

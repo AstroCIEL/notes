@@ -7,6 +7,7 @@
   - [Genus](frontend/genus_synthesis.md)
   - [.lib file](/frontend/lib.md)
   - [AMS](/frontend/AMS.md)
+  - [ptpx](/frontend/ptpx.md)
 
 - BackEnd
   - [Virtuoso](/backend/virtuoso.md)

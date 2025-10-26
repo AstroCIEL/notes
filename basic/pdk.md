@@ -210,6 +210,7 @@ smic28HKD_0918_1P8M_6Ic_1TMc_1MTTc_ALPA2_oa_cds_2023_12_15_v1.0_rev0_0
 
 11. .spef (Standard Parasitic Exchange Format)：
   - 包含寄生参数信息，用于时序分析和信号完整性检查。
+  - SDF文件不能进行noise分析，而SPEF文件可以分析noise。SDF是计算好的pin to pin的delay值(according to spef or other parasitic files)，SPEF是每一条net上的parasitic。
   
 12. .map (Mapping File)：
   - 用于映射不同的文件格式或命名约定，通常在 LVS 和 DRC 检查中使用。
@@ -292,11 +293,11 @@ find "$source_dir" -type f -name "*.tgz" -print0 | while IFS= read -r -d '' tgz_
 done
 ```
 
-Currently all CAxxx(single port sram) are processed.
+currently all Cxxxx(single port sram，dual port sram, rom, rf) are processed.
 
 #### std_io
 
-In original path `/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/IP`, tpbn22v_110a, tpbn22v_eu_lf_bump_080b, tpbn22v_eu_lf_bump_080b, tphn22ullgv18e_150b the four are std io. Copy them to destination path like `/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Std_IO`. Execute extract.sh and merge_all.sh in order.(Or you can just use the very bash scripts used in std_cell part, which we will mention it later)
+In original path `/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/IP`, tpbn22v_110a, tpbn22v_eu_lf_bump_080b, tpbn22v_eu_lf_bump_080b, tphn22ullgv18e_150b the four are std io. Copy them to destination path like `/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Std_IO`. Execute extract.sh and merge_all.sh in order.(Or you can just use the very bash scripts used in std_cell part, which we will mention it later, which is more recommended)
 
 ```bash
 #!/bin/bash
@@ -505,7 +506,8 @@ echo "Batch directory merge and cleanup process finished for all subdirectories.
 
 #### std_cell
 
-In original path `/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/IP`, except for tpbn22v_110a, tpbn22v_eu_lf_bump_080b, tpbn22v_eu_lf_bump_080b, tphn22ullgv18e_150b which are std io, all others are std cell ip. Copy them to destination path like `/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Std_Cell`. Execute untar.sh then.
+in original path `/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/IP`, except for `tpbn22v_110a`, `tpbn22v_eu_lf_bump_080b`, `tpbn22v_eu_lf_bump_080b`, `tphn22ullgv18e_150b` which are std io, all others are std cell ip. Additionally, `/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/IP20241223`are some other new released ips. copy them to destination path like `/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Std_Cell`. execute `untar.sh`. Note that these ips are provided by tsmc and are widely used. 
+Arm also provide their customed std cell, in `/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/Memory_compiler/TS83` those name after `LBxxx`. The etract code should use `unpack_sram.sh` one by one because they share the same directory structure as memory compiler, which are also provided by arm.
 
 ```bash
 #!/bin/bash
