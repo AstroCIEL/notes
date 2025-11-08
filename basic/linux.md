@@ -38,6 +38,11 @@ find . -type f -name "*to_be_found*" -exec rm -i {} \;
 ```bash
 # .zip
 zip -r dir.zip dir
+zip -r dir.zip dir -x "dir/to_be_excluded/*" # exclude files
+zip -r dir.zip dir -x "*.log" "*.txt" # 使用通配符
+zip -r dir.zip dir -x "file_to_exclude.txt" # exclude single file
+# -x 后是绝对路径而不是相对于呗压缩文件夹的相对路径
+
 unzip filename.zip -d filedir
 
 # .tar.gz
@@ -94,12 +99,13 @@ tmux kill-session -t <session-name>
 
 ```bash
 conda init
-
 conda create --name <env_name> python=<version>
-
 conda env list
-
 conda env remove --name <env_name>
+
+conda env export > environment.yml
+conda env create -f environment.yml
+conda env update -f environment.yml
 ```
 
 ## 权限设置`chmod`
@@ -170,4 +176,17 @@ docker rm [容器ID或容器名]  # 删除容器
 docker exec -it [容器ID或容器名] /bin/bash  # 在容器运行时进入其命令行
 docker logs [容器容器ID或容器名名]  # 查看容器日志
 docker stats [容器ID或容器名]  # 查看容器资源占用情况
+```
+
+## `scp`传输文件
+
+假设A和B在同一个局域网，则可以使用内网ip，如果不在同一个局域网，则需要使用公网ip。现在假设要将B服务器上的文件传输到A服务器,则在A服务器终端执行：
+
+```bash
+#传输A的文件到B的文件夹下
+scp user_b@ip_b:/path/to/file /path/to/save/dir
+
+#传输B的文件夹到A的文件夹下
+scp -r user_b@ip_b:/path/to/dir/B /path/to/save/dir/A
+# B文件夹将会在A目录下
 ```
