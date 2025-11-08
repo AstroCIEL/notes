@@ -190,3 +190,31 @@ scp user_b@ip_b:/path/to/file /path/to/save/dir
 scp -r user_b@ip_b:/path/to/dir/B /path/to/save/dir/A
 # B文件夹将会在A目录下
 ```
+
+## 外网服务器通过校内主机接受校内服务器文件
+
+假设现有一台校园网内远程服务器（A），还有一个外网服务器（B，无法访问校内资源，即直接使用scp无效），可以通过连接校园网的本地机器（L）中转，将校内服务器上的文件传输到外网服务器。
+
+```bash
+# 本地机器L：建立接应点（socks5）
+ssh -D 1080 user_A@ip_A
+
+# 本地机器L：建立反向ssh通道
+ssh -R 10800:localhost:10800 user_B@ip_B
+# 对于例如autodl的主机，有给出的ssh连接指令包含端口
+ssh -R 10800:localhost:10800 - p xxxx user_B@B_com
+
+# 外网主机B：配置proxychains4
+sudo apt-get update
+sudo apt-get install proxychains4
+sudo vim /etc/proxychains.conf
+# 添加以下内容(去掉井号)
+# dynamic_chain
+# [ProxyList]
+# socks5 127.0.0.1 10800
+
+# 外网主机B：使用proxychains4下载文件
+proxychains4 scp user_A@ip_A:/path/to/file /path/to/save/dir
+```
+
+具体解释可以看[ssh转发](./ssh转发.md)
