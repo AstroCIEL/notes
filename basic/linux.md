@@ -218,3 +218,47 @@ proxychains4 scp user_A@ip_A:/path/to/file /path/to/save/dir
 ```
 
 具体解释可以看[ssh转发](./ssh转发.md)
+
+## git更新仓库
+
+现在假设想要将本地的某个文件夹上传到github作为一个新的仓库。首先你需要在github上创建一个仓库，假设其网址为https://github.com/username/new_repo.git。然后在本地想要上传的文件夹下执行：
+
+```bash
+git init
+git add .
+git commit -m "first commit"
+git remote add origin https://github.com/username/new_repo.git
+
+# 为了推送，需要验证身份，一种方法是使用token，但此处介绍另一种方法即使用ssh验证
+# 首先在github上生成一个ssh key
+ssh-keygen -t ed25519 -C "your_email@example.com"
+# 将生成的公钥(.pub)添加到github上(头像-->settings-->SSH and GPG keys-->New SSH key)
+# 检查当前远程url
+git remote -v
+# 如果显示的是https，则修改为ssh
+git remote set-url origin git@github.com:username/new_repo.git
+
+# 推送
+git push -u origin master
+```
+
+假设验证通过之后，则无需再进行验证，只需要执行
+
+```bash
+git add .
+git commit -m "commit_message"
+git push origin main
+```
+
+对于不想同步的文件或者文件夹，可以通过编写.gitignore文件来排除。在.gitignore文件中，可以指定要忽略的文件或文件夹(全部使用相对路径，并且在所有文件夹后面都要加一个斜杠来表征这是一个文件夹)，例如：
+
+```gitignore
+# 忽略文件夹内所有.txt文件，不管在哪一级
+*.txt
+
+# 忽略文件夹内所有叫build的文件夹（及其内部内容），不管在哪一级
+build/
+
+# 忽略根目录下的叫build的文件夹（及其内部内容）
+/build/
+```
