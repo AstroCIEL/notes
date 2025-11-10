@@ -189,6 +189,9 @@ scp user_b@ip_b:/path/to/file /path/to/save/dir
 #传输B的文件夹到A的文件夹下
 scp -r user_b@ip_b:/path/to/dir/B /path/to/save/dir/A
 # B文件夹将会在A目录下
+
+# 对于远程主机指定了端口号的，例如autodl主机
+scp -rP 22 user_b@ip_b.com:/path/to/file /path/to/save/dir
 ```
 
 ## 外网服务器通过校内主机接受校内服务器文件
@@ -217,7 +220,7 @@ sudo vim /etc/proxychains.conf
 proxychains4 scp user_A@ip_A:/path/to/file /path/to/save/dir
 ```
 
-具体解释可以看[ssh转发](./ssh转发.md)
+具体解释可以看[ssh转发](https://github.com/AstroCIEL/notes/blob/master/basic/ssh转发.md)
 
 ## git更新仓库
 
