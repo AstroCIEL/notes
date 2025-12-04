@@ -414,3 +414,257 @@ echo "--- DONE ---"
 ```
 
 Note that tar format is different from zip format. It is allowed for several tar files share the same prefix directory structure and when you extract them together, the directory structure will be preserved and merged automatically. That's why the IP libraries are usually archived into tar.gz format. You just directly extract them where they are, and the shared prefix directories are merged automatically. Don't complicate things by trying to extract them into a different directory structure.
+
+#### useful scripts
+
+unarchive every tar.gz or zip file into a created directory of the same name in the current directory and delete tar.gz and zip.
+
+```bash
+#!/bin/bash
+
+# Script purpose: Unpack all .tar.gz and .zip files in the current directory
+# into a new folder named after the file (without the extension), then delete the archive.
+
+echo "--- Script execution started ---"
+echo "Current working directory: $(pwd)"
+echo "--------------------------------"
+
+# Initialize file counter
+COUNT=0
+DELETED_COUNT=0
+
+# Loop through all files matching the patterns *.tar.gz or *.zip
+for FILE in *.tar.gz *.zip; do
+    # Check if a file was actually found
+    if [ -f "$FILE" ]; then
+        COUNT=$((COUNT + 1))
+        
+        echo "Processing file: $FILE"
+        
+        # 1. Determine the target directory name and the appropriate command
+        TARGET_DIR=""
+        COMMAND=""
+        
+        case "$FILE" in
+            *.tar.gz)
+                # Remove .tar.gz extension
+                TARGET_DIR="${FILE%.tar.gz}"
+                # tar command: -x (extract), -z (gzip), -f (file), -C (change directory)
+                COMMAND="tar -xzf"
+                ;;
+            *.zip)
+                # Remove .zip extension
+                TARGET_DIR="${FILE%.zip}"
+                # unzip command: -q (quiet), -d (destination directory)
+                COMMAND="unzip -q"
+                ;;
+            *)
+                echo "   ⚠️ Warning: File type not supported. Skipping $FILE."
+                continue
+                ;;
+        esac
+        
+        # 2. Create the target directory
+        echo "   Creating directory: $TARGET_DIR"
+        mkdir -p "$TARGET_DIR"
+        
+        # 3. Execute the extraction command
+        EXTRACTION_SUCCESS=0
+        
+        if [ "$COMMAND" = "tar -xzf" ]; then
+            # Tar requires the -C flag
+            if $COMMAND "$FILE" -C "$TARGET_DIR"; then
+                EXTRACTION_SUCCESS=1
+            fi
+        elif [ "$COMMAND" = "unzip -q" ]; then
+            # Unzip requires the -d flag
+            if $COMMAND "$FILE" -d "$TARGET_DIR"; then
+                EXTRACTION_SUCCESS=1
+            fi
+        fi
+        
+        # 4. Check extraction success and delete the original file
+        if [ "$EXTRACTION_SUCCESS" -eq 1 ]; then
+            echo "   ✅ Success: Extracted content to $TARGET_DIR/"
+            
+            # Deletion part
+            echo "   🗑️ Deleting original file: $FILE"
+            rm "$FILE"
+            
+            if [ $? -eq 0 ]; then
+                DELETED_COUNT=$((DELETED_COUNT + 1))
+                echo "   ✅ Deletion successful."
+            else
+                echo "   ⚠️ Warning: Could not delete $FILE. Check file permissions."
+            fi
+        else
+            echo "   ❌ Error: Extraction failed for $FILE. Original file remains."
+        fi
+        
+        echo "--------------------------------"
+    fi
+done
+
+if [ "$COUNT" -eq 0 ]; then
+    echo "Info: No *.tar.gz or *.zip files found in the current directory."
+fi
+
+echo "--- Script execution finished ---"
+echo "Summary: Processed $COUNT files. Successfully deleted $DELETED_COUNT files."
+```
+when archive files are in subdirectories like this:
+
+```
+root_dir 
+|-- subdir1 
+|   |-- zipfile1.zip 
+|   |-- zipfile2.zip 
+|   |-- targzfile1.tar.gz 
+|   |-- targzfile2.tar.gz 
+|-- subdir2 
+|   |-- zipfile1.zip 
+|   |-- targzfile1.tar.gz 
+|-- subdir3 
+|   |-- targzfile1.tar.gz 
+```
+
+and you want to unarchive them in auto-created dir of the same name, use default mode:
+
+```bash
+#!/bin/bash
+
+# Script purpose: Recursively find and unpack all .tar.gz and .zip files 
+# found in subdirectories of the current working directory (the root dir).
+# Extraction mode is controlled by an optional argument:
+# - If no argument is provided (default): Extracts to a new, named sub-directory.
+# - If '-i' or '--inplace' is provided: Extracts directly into the archive's current directory.
+#
+# NEW FEATURE: The original archive file is deleted upon successful extraction.
+
+echo "--- Universal Recursive Unpacker Started ---"
+echo "Root Directory: $(pwd)"
+echo "------------------------------------------"
+
+# 1. PROCESS ARGUMENTS
+INPLACE_MODE=0
+if [[ "$1" == "-i" || "$1" == "--inplace" ]]; then
+    INPLACE_MODE=1
+    echo "--- MODE: IN-PLACE EXTRACTION (-i) ---"
+    echo "Contents will be extracted directly into the subdirectory containing the archive."
+else
+    echo "--- MODE: DIRECTORY EXTRACTION (Default) ---"
+    echo "Contents will be extracted into a new, named folder next to the archive."
+fi
+echo "--- DELETION ENABLED: Archives will be removed after successful extraction. ---"
+echo "------------------------------------------"
+
+# Ensure that if no files match the pattern, the loop is skipped (prevents errors)
+shopt -s nullglob
+
+# Initialize counters
+TOTAL_FILES_PROCESSED=0
+SUCCESSFUL_EXTRACTIONS=0
+DELETED_ARCHIVES=0
+
+# Outer loop: Traverse all subdirectories (*/ matches only directories)
+for SUBDIR in */; do
+    # Check if the item is indeed a directory
+    if [ -d "$SUBDIR" ]; then
+        echo -e "\n---> Entering subdirectory: $SUBDIR"
+        
+        # Inner loop: Check for archives within the current subdirectory
+        for FILE_PATH in "$SUBDIR"*.tar.gz "$SUBDIR"*.zip; do
+            # Check if the file exists (important due to nullglob)
+            if [ -f "$FILE_PATH" ]; then
+                TOTAL_FILES_PROCESSED=$((TOTAL_FILES_PROCESSED + 1))
+                
+                # Get just the filename (e.g., package.tar.gz)
+                FILENAME=$(basename "$FILE_PATH")
+                
+                echo "   Processing archive: $FILENAME"
+                
+                # Determine the target directory name and the appropriate command
+                TARGET_DIR=""
+                COMMAND=""
+                
+                case "$FILENAME" in
+                    *.tar.gz)
+                        TARGET_DIR="${FILENAME%.tar.gz}"
+                        COMMAND="tar -xzf"
+                        ;;
+                    *.zip)
+                        TARGET_DIR="${FILENAME%.zip}"
+                        COMMAND="unzip -q"
+                        ;;
+                    *)
+                        echo "   ⚠️ Warning: File type not supported. Skipping $FILENAME."
+                        continue
+                        ;;
+                esac
+                
+                # 2. Determine the Final Extraction Path
+                if [ "$INPLACE_MODE" -eq 1 ]; then
+                    # IN-PLACE MODE: Extraction goes directly into the parent subdirectory
+                    EXTRACTION_PATH="$SUBDIR"
+                    echo "   Destination: $EXTRACTION_PATH (In-Place)"
+                    # No need to mkdir, as $SUBDIR already exists.
+                else
+                    # DEFAULT MODE: Extraction goes into a new, named folder
+                    EXTRACTION_PATH="$SUBDIR/$TARGET_DIR"
+                    echo "   Destination: $EXTRACTION_PATH (New Directory)"
+                    # Create the target directory within the subdirectory
+                    mkdir -p "$EXTRACTION_PATH"
+                fi
+                
+                # 3. Execute the extraction command
+                EXTRACTION_SUCCESS=0
+                
+                if [ "$COMMAND" = "tar -xzf" ]; then
+                    # Tar command: -x (extract), -z (gzip), -f (file), -C (change directory)
+                    if $COMMAND "$FILE_PATH" -C "$EXTRACTION_PATH"; then
+                        EXTRACTION_SUCCESS=1
+                    fi
+                elif [ "$COMMAND" = "unzip -q" ]; then
+                    # Unzip command: -q (quiet), -d (destination directory)
+                    if $COMMAND "$FILE_PATH" -d "$EXTRACTION_PATH"; then
+                        EXTRACTION_SUCCESS=1
+                    fi
+                fi
+                
+                # 4. Report result and handle deletion
+                if [ "$EXTRACTION_SUCCESS" -eq 1 ]; then
+                    SUCCESSFUL_EXTRACTIONS=$((SUCCESSFUL_EXTRACTIONS + 1))
+                    echo "   ✅ Success: Extracted content to $EXTRACTION_PATH"
+                    
+                    # Deletion step
+                    echo "   🗑️ Deleting archive: $FILENAME"
+                    rm "$FILE_PATH"
+                    
+                    if [ $? -eq 0 ]; then
+                        DELETED_ARCHIVES=$((DELETED_ARCHIVES + 1))
+                        echo "   ✅ Deletion successful."
+                    else
+                        echo "   ⚠️ Warning: Could not delete $FILENAME. Please check permissions."
+                    fi
+                else
+                    echo "   ❌ Error: Extraction failed for $FILENAME. Original file remains."
+                fi
+                
+                echo "   --------------------"
+            fi
+        done
+        
+        echo "<--- Finished subdirectory: $SUBDIR"
+    fi
+done
+
+# Remove nullglob option
+shopt -u nullglob
+
+echo -e "\n--- Script execution finished ---"
+echo "Summary: Processed $TOTAL_FILES_PROCESSED archives."
+echo "Successful extractions: $SUCCESSFUL_EXTRACTIONS."
+echo "Archives successfully deleted: $DELETED_ARCHIVES."
+```
+
+if you want to recursively unarchive files directly where they are with no new directories created, use the above script with the `-i` or `--inplace` option.
