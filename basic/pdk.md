@@ -273,7 +273,7 @@ All original installation tgz is at
 While the same prefix means one category(e.g. CAxxx are about sram_sp_xxxxx while CBxxx are about sram_dp_xxxxx),but you can still view one dir as one specific kind(e.g. CA000 is about sram_sp_uhde_shvt_mvt while CA001 is about sram_sp_hde_shvt_mvt). therefore, it is recommanded that you process one dir(e.g. CA000) at a time. steps are as follows
 
 - copy those CAxxx and other from the original path to destination path like /data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Memory_Compiler.
-- copy unpack_sram.sh into CA000 for example, and execute it.
+- copy unpack_sram.sh into root dir of CA000(i.e. the same hier as CA000), and execute it.
 - then sram_sp_uhde_shvt_mvt/ should all be extracted into /data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Memory_Compiler
 - delete CAxxx and so on(dont delete them from the original path because that's an original copy)
 
@@ -282,227 +282,49 @@ Note that because the shared hirerachy of each tgz is `arm/tsmc/cln22ul/`, so `a
 ```bash
 #!/bin/bash
 
-source_dir="."
-target_dir="/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Memory_Compiler"
+TARGET_DIR="/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Memory_Compiler"
 
-mkdir -p "$target_dir"
+SOURCE_ROOT="."
 
-find "$source_dir" -type f -name "*.tgz" -print0 | while IFS= read -r -d '' tgz_file; do
-    echo "Extracting $tgz_file to target directory"
-    tar -xzf "$tgz_file" --strip-components=3 -C "$target_dir"
+if [ ! -d "$TARGET_DIR" ]; then
+    echo "正在创建目标目录: $TARGET_DIR"
+    mkdir -p "$TARGET_DIR"
+fi
+
+echo "开始批量处理..."
+echo "源目录: $(pwd)"
+echo "目标目录: $TARGET_DIR"
+echo "----------------------------------------"
+
+find "$SOURCE_ROOT" -maxdepth 1 -type d ! -path "$SOURCE_ROOT" | sort | while read -r subdir; do
+    
+    dirname=$(basename "$subdir")
+    echo "正在处理子文件夹: [$dirname]"
+
+    find "$subdir" -type f -name "*.tgz" -print0 | while IFS= read -r -d '' tgz_file; do
+        filename=$(basename "$tgz_file")
+        echo "  -> 正在解压: $filename"
+
+        tar -xzf "$tgz_file" --strip-components=3 -C "$TARGET_DIR"
+
+        if [ $? -eq 0 ]; then
+            echo "     [成功]"
+        else
+            echo "     [失败] $filename 解压出错"
+        fi
+    done
 done
+
+echo "----------------------------------------"
 ```
 
 currently all Cxxxx(single port sram，dual port sram, rom, rf) are processed.
 
 #### std_io
 
-In original path `/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/IP`, tpbn22v_110a, tpbn22v_eu_lf_bump_080b, tpbn22v_eu_lf_bump_080b, tphn22ullgv18e_150b the four are std io. Copy them to destination path like `/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Std_IO`. Execute extract.sh and merge_all.sh in order.(Or you can just use the very bash scripts used in std_cell part, which we will mention it later, which is more recommended)
+In original path `/data/data_eda2/PDK_Installer/TSMC_22NM_CMOS_RF_ULTRA_LOW_LEAKAGE_0.81.8V_PDK(IPDK)(INCLUDES_CRN22ULL0.82.5V)-20220111/IP`, tpbn22v_110a, tpbn22v_eu_lf_bump_080b, tpbn22v_eu_lf_bump_080b, tphn22ullgv18e_150b the four are std io. Copy them to destination path like `/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL/IP/Std_IO`. 
 
-```bash
-#!/bin/bash
-
-
-for dir in */; do
-  if [[ -d "$dir" ]]; then
-
-    cd "$dir"
-
-    for file in *.tar.gz; do
-      if [[ -f "$file" ]]; then
-        filename=$(basename "$file" .tar.gz)
-
-        mkdir "$filename" && tar -xzf "$file" -C "$filename"
-        echo "extract $dir $filename\n"
-        rm "$file"
-      fi
-    done
-    cd ..
-  fi
-done
-```
-
-```bash
-#!/bin/bash
-
-# ---------------------------------------------------------------------------
-# Bash Script for Batch Directory Merging (Back_End, Front_End, Documentation) and Cleanup
-# Author: Your Name (Optional)
-# Date: May 17, 2025
-# Description: Navigates into each subdirectory in the current location,
-#              merges Back_End, Front_End, and Documentation directories from their
-#              ./<first_level_folder>/TSMCHOME/digital/ structures into
-#              ./digital/ within that subdirectory, and then removes
-#              the original TSMCHOME structure.
-# ---------------------------------------------------------------------------
-
-# Exit immediately if a command exits with a non-zero status.
-set -e
-
-# Treat unset variables as an error.
-set -u
-
-# ---------------------------------------------------------------------------
-# Function to process a single root-like directory
-# This function expects to be called from inside the directory it should process.
-# ---------------------------------------------------------------------------
-process_single_directory() {
-    local current_root_dir=$(pwd)
-    echo "-> Processing directory: ${current_root_dir}"
-
-    # Define the target directories relative to the current directory (root)
-    local TARGET_DIGITAL_DIR="./digital"
-    local TARGET_BACKEND_DIR="${TARGET_DIGITAL_DIR}/Back_End"
-    local TARGET_FRONTEND_DIR="${TARGET_DIGITAL_DIR}/Front_End"
-    local TARGET_DOCUMENTATION_DIR="${TARGET_DIGITAL_DIR}/Documentation" # Added Documentation target
-
-    # ---------------------------------------------------------------------------
-    # Step 1: Create the target base directories if they don't exist
-    # ---------------------------------------------------------------------------
-    echo "  Ensuring target directories exist:"
-    echo "    - ${TARGET_BACKEND_DIR}"
-    echo "    - ${TARGET_FRONTEND_DIR}"
-    echo "    - ${TARGET_DOCUMENTATION_DIR}" # Added Documentation target creation
-    # Use -p to create parent directories as needed and avoid errors if they exist
-    mkdir -p "${TARGET_BACKEND_DIR}" "${TARGET_FRONTEND_DIR}" "${TARGET_DOCUMENTATION_DIR}"
-    echo "  Target directories are ready."
-
-    # ---------------------------------------------------------------------------
-    # Step 2: Iterate through all items in the current directory
-    # ---------------------------------------------------------------------------
-    echo "  Scanning for first-level subfolders within ${current_root_dir}..."
-
-    # Loop through all items in the current directory (*)
-    for item in *; do
-        # Check if the item is a directory AND it's not our target 'digital' directory
-        if [ -d "$item" ] && [ "$item" != "$(basename "$TARGET_DIGITAL_DIR")" ]; then
-            echo "  Processing subfolder: ${item}"
-
-            # Define the expected source directories within this subfolder
-            local SOURCE_BACKEND_DIR="${item}/TSMCHOME/digital/Back_End"
-            local SOURCE_FRONTEND_DIR="${item}/TSMCHOME/digital/Front_End"
-            local SOURCE_DOCUMENTATION_DIR="${item}/TSMCHOME/digital/Documentation" # Added Documentation source
-            local CLEANUP_SOURCE_TSMCHOME="${item}/TSMCHOME" # The directory to clean up
-
-            local merged_anything=0 # Flag to check if we found anything to merge
-
-            # -------------------------------------------------------------------
-            # Step 3: Check for and merge Back_End directory
-            # -------------------------------------------------------------------
-            if [ -d "$SOURCE_BACKEND_DIR" ]; then
-                echo "    Found Back_End source: ${SOURCE_BACKEND_DIR}"
-                echo "    Merging contents to: ${TARGET_BACKEND_DIR}"
-                rsync -av "${SOURCE_BACKEND_DIR}/" "${TARGET_BACKEND_DIR}/"
-                echo "    Back_End merge complete for ${item}."
-                merged_anything=1
-            else
-                echo "    Back_End source not found in ${item} (looked for ${SOURCE_BACKEND_DIR}). Skipping."
-            fi
-
-            # -------------------------------------------------------------------
-            # Step 4: Check for and merge Front_End directory
-            # -------------------------------------------------------------------
-            if [ -d "$SOURCE_FRONTEND_DIR" ]; then
-                echo "    Found Front_End source: ${SOURCE_FRONTEND_DIR}"
-                echo "    Merging contents to: ${TARGET_FRONTEND_DIR}"
-                rsync -av "${SOURCE_FRONTEND_DIR}/" "${TARGET_FRONTEND_DIR}/"
-                echo "    Front_End merge complete for ${item}."
-                merged_anything=1
-            else
-                echo "    Front_End source not found in ${item} (looked for ${SOURCE_FRONTEND_DIR}). Skipping."
-            fi
-
-            # -------------------------------------------------------------------
-            # Step 5: Check for and merge Documentation directory (Added)
-            # -------------------------------------------------------------------
-            if [ -d "$SOURCE_DOCUMENTATION_DIR" ]; then
-                echo "    Found Documentation source: ${SOURCE_DOCUMENTATION_DIR}"
-                echo "    Merging contents to: ${TARGET_DOCUMENTATION_DIR}"
-                rsync -av "${SOURCE_DOCUMENTATION_DIR}/" "${TARGET_DOCUMENTATION_DIR}/"
-                echo "    Documentation merge complete for ${item}."
-                merged_anything=1
-            else
-                echo "    Documentation source not found in ${item} (looked for ${SOURCE_DOCUMENTATION_DIR}). Skipping."
-            fi
-
-
-            # -------------------------------------------------------------------
-            # Step 6: Clean up the source TSMCHOME structure after attempting merge
-            # -------------------------------------------------------------------
-            # Clean up if the TSMCHOME structure exists.
-            if [ -d "$CLEANUP_SOURCE_TSMCHOME" ]; then
-               echo "    Cleaning up source structure: ${CLEANUP_SOURCE_TSMCHOME}"
-               # !!! BE EXTREMELY CAREFUL WITH rm -rf !!!
-               # This command will permanently delete the directory and its contents.
-               # Consider adding a prompt here for safety if you uncomment the rm line below.
-               # read -p "    Confirm removal of ${CLEANUP_SOURCE_TSMCHOME}? (y/n) " confirm
-               # if [[ "$confirm" == [yY] ]]; then
-               #    rm -rf "${CLEANUP_SOURCE_TSMCHOME}"
-               #    echo "    Removed."
-               # else
-               #    echo "    Skipping removal."
-               # fi
-               # --- Uncomment the direct removal below if you are confident ---
-               rm -rf "${CLEANUP_SOURCE_TSMCHOME}"
-               echo "    Removed."
-            else
-               echo "    Source TSMCHOME structure not found for cleanup: ${CLEANUP_SOURCE_TSMCHOME}. Skipping cleanup."
-            fi
-
-
-        else
-            # Skip items that are not directories or are the target 'digital' directory
-            echo "  Skipping non-directory or target item within ${current_root_dir}: ${item}"
-        fi
-    done
-
-    echo "-> Finished processing directory: ${current_root_dir}"
-}
-
-# ---------------------------------------------------------------------------
-# Main script execution starts here
-# This part iterates through subdirectories in the current location
-# ---------------------------------------------------------------------------
-
-echo "Starting batch directory merge (Back_End, Front_End, Documentation) and cleanup process..."
-echo "Script is running from: $(pwd)"
-echo "Will process all subdirectories found in the current location."
-echo ""
-echo "!!! WARNING: This script will permanently delete source TSMCHOME directories !!!"
-echo "!!!          Ensure you have a backup before proceeding!                   !!!"
-echo ""
-# Optional: Add a delay or confirmation here before starting
-# read -p "Press Enter to start the process or Ctrl+C to abort..."
-
-# Iterate through all items in the current directory (the parent level)
-for project_dir in *; do
-    # Check if the item is a directory AND it's not the script file itself
-    if [ -d "$project_dir" ] && [ "$project_dir" != "$(basename "$0")" ]; then
-        echo "--------------------------------------------------"
-        # Use pushd/popd to safely change directory and return
-        if pushd "$project_dir" > /dev/null; then # > /dev/null suppresses pushd output
-            # Call the function to process the current directory
-            process_single_directory
-            # Return to the previous directory (where the script is running from)
-            popd > /dev/null # > /dev/null suppresses popd output
-        else
-            echo "Error: Could not enter directory ${project_dir}. Skipping."
-            # If pushd failed, we are still in the original directory, no need for popd
-        fi
-        echo "--------------------------------------------------"
-        echo ""
-    else
-        # Skip items that are not directories or are the script file itself
-        echo "Skipping non-directory or script file: ${project_dir}"
-    fi
-done
-
-echo "Batch directory merge and cleanup process finished for all subdirectories."
-
-# ---------------------------------------------------------------------------
-# End of Script
-# ---------------------------------------------------------------------------
-```
+bash scipts used are the same as the next section `std_cell`
 
 #### std_cell
 
@@ -545,6 +367,50 @@ for dir in */; do
 done
 
 echo "All .tar.gz files processed."
+```
+
+to remove `TSMCHOME` hierarchy you can excute flatten.sh
+
+```bash
+#!/bin/bash
+
+echo "current: $(pwd)"
+echo "-------------------"
+
+for dir in *; do
+    if [ -d "$dir" ]; then
+        tsmc_home_path="$dir/TSMCHOME"
+        
+        if [ -d "$tsmc_home_path" ]; then
+            echo "find: $dir/TSMCHOME"
+            
+            shopt -s dotglob
+            
+            echo "   mv to  $dir/ ..."
+            mv "$tsmc_home_path"/* "$dir/"
+            
+            shopt -u dotglob
+            
+            if [ $? -eq 0 ]; then
+                echo "   del empty  $tsmc_home_path ..."
+                rmdir "$tsmc_home_path"
+                if [ $? -eq 0 ]; then
+                    echo "   finish processing  $dir"
+                else
+                    echo "   WARNING: fail to process $tsmc_home_path。is it empty?"
+                fi
+            else
+                echo "   FAIL.skip"
+            fi
+            
+        else
+            echo " no TSMCHOME in $dir. skip"
+        fi
+    fi
+done
+
+echo "-------------------"
+echo "--- DONE ---"
 ```
 
 Note that tar format is different from zip format. It is allowed for several tar files share the same prefix directory structure and when you extract them together, the directory structure will be preserved and merged automatically. That's why the IP libraries are usually archived into tar.gz format. You just directly extract them where they are, and the shared prefix directories are merged automatically. Don't complicate things by trying to extract them into a different directory structure.
