@@ -178,7 +178,7 @@ docker logs [容器容器ID或容器名名]  # 查看容器日志
 docker stats [容器ID或容器名]  # 查看容器资源占用情况
 ```
 
-## `scp`传输文件
+## `scp`/`rsync`传输文件
 
 假设A和B在同一个局域网，则可以使用内网ip，如果不在同一个局域网，则需要使用公网ip。现在假设要将B服务器上的文件传输到A服务器,则在A服务器终端执行：
 
@@ -192,6 +192,16 @@ scp -r user_b@ip_b:/path/to/dir/B /path/to/save/dir/A
 
 # 对于远程主机指定了端口号的，例如autodl主机
 scp -rP 22 user_b@ip_b.com:/path/to/file /path/to/save/dir
+```
+
+需要注意的是，`scp`命令默认会递归地复制远程文件夹的内容到本地目标文件夹中，并且如果遇到本地已有同名文件，它会**直接**覆盖本地文件，而不会询问你是否确认或中断传输。本地原有独有的文件不受影响。在处理大文件夹或需要同步文件时，`rsync` 是比 `scp` 更好的选择，它默认只会传输差异文件，并且提供了 `-u` (更新，跳过较新的本地文件) 或 `--backup` (备份旧文件) 等高级选项。
+
+```bash
+# -a: 归档模式 (递归、保留权限、时间等)
+# -v: 显示详情
+# -z: 压缩传输 (可选)
+# --progress: 显示进度
+rsync -avz --progress user@remote_host:/remote/source_dir/ /local/target_dir/
 ```
 
 ## 外网服务器通过校内主机接受校内服务器文件
@@ -224,7 +234,7 @@ proxychains4 scp user_A@ip_A:/path/to/file /path/to/save/dir
 
 ## git更新仓库
 
-现在假设想要将本地的某个文件夹上传到github作为一个新的仓库。首先你需要在github上创建一个仓库，假设其网址为https://github.com/username/new_repo.git。然后在本地想要上传的文件夹下执行：
+现在假设想要将本地的某个文件夹上传到github作为一个新的仓库。首先你需要在github上创建一个仓库，假设其网址为https://github.com/username/new_repo.git。然后在本地想要上传的文件夹下执行(以下介绍ssh认证)：
 
 ```bash
 git init
@@ -253,6 +263,20 @@ git commit -m "commit_message"
 git push origin main
 ```
 
+对于http token认证：
+
+```bash
+#假设当前本地仓库就是git clone下来的，因此无需git init
+git add .
+git commit -m "commit_message"
+
+# 如果是第一次push，为了让本地记住token无需再认证
+git config --global credential.helper store
+# 如果不是第一次push或者是本地已经记住认证则不需要
+
+git push origin main
+```
+
 对于不想同步的文件或者文件夹，可以通过编写.gitignore文件来排除。在.gitignore文件中，可以指定要忽略的文件或文件夹(全部使用相对路径，并且在所有文件夹后面都要加一个斜杠来表征这是一个文件夹)，例如：
 
 ```gitignore
@@ -264,4 +288,15 @@ build/
 
 # 忽略根目录下的叫build的文件夹（及其内部内容）
 /build/
+```
+
+如果当前已经不小心把不想同步的文件夹add和commit但是还没有push到远程仓库，可以执行：
+
+```bash
+git rm -r --cached [folder_name]
+
+# 然后更新.gitignore文件
+git add .gitignore
+git commit --amend --no-edit
+git push origin main
 ```
