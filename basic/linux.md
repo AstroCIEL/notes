@@ -300,3 +300,44 @@ git add .gitignore
 git commit --amend --no-edit
 git push origin main
 ```
+
+有时候即使主机开了代理软件例如clash，git也不会走代理，导致有时候连接超时。为了显式地告诉 Git 使用代理地址（通常 Clash 在本地开放的 HTTP 端口默认是 7890）：
+
+```bash
+# 设置 HTTP 代理
+git config --global http.proxy http://127.0.0.1:7890
+# 设置 HTTPS 代理（即使是 https 仓库，这里也填 http://...）
+git config --global https.proxy http://127.0.0.1:7890
+# --global 表示对该用户下所有 Git 仓库生效
+
+# 验证配置是否生效
+git config --global --get http.proxy
+git config --global --get https.proxy
+# 如果输出了 http://127.0.0.1:7890，说明设置成功
+
+# 后续如果要取消代理
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+```
+
+## 远程主机全局代理使用本地网络转发
+
+假设内网内的某个远程主机没有翻墙能力，但是本地机器已经配置了代理（例如使用clash，默认端口7890），可以通过端口转发使得远程主机使用本地机器的网络。
+
+首先在本地机器中运行
+
+```bash
+ssh -N -R 20000:127.0.0.1:7890 remote_id@remote_ip
+```
+
+然后在远程主机上
+
+```bash
+# 设置代理
+export http_proxy="socks5h://127.0.0.1:20000"
+export https_proxy="socks5h://127.0.0.1:20000"
+
+# 取消代理
+unset http_proxy
+unset https_proxy
+```
