@@ -32,10 +32,34 @@ TD-LO28-TF-2011_V2 # technology file(.tf), layer map(.map), display file(.drf) f
 TD-LO28-XC-2066-V1 # calibre XRC 使用说明
 ```
 
+## 目录结构（TSMC22ULL）
+
+TSMC22ULL路径在
+
+```text
+/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL
+```
+
+目录结构如下：
+
+```text
+/data/data_eda2/PDK_Tech/TSMC_22NM_RF_ULL
+|--Doc
+   |--CL-DR: design rules
+   |--...
+|--PDK: for anything about device(e.g. nmos, pmos) and technology(QRC, StarRC,layermap) you should find it here
+   |--PDK_0.8V_2.5V_1P9M_6X1Z1U_UT_ALRDL_StarRC_QRC
+   |--PDK_0.8V_2.5V_1P9M_6X2R_UT_ALRDL_StarRC_QRC
+|--IP: for MemoryCompiler(e.g. sram compiler)/StdCell(e.g. DFF, AND, XOR)/StdIO(e.g. PAD) you should find it here
+   |--Memory_Compiler
+   |--Std_Cell
+   |--Std_IO
+```
+
 ## 工艺库层级的理解
 
 最底层的大层级是pdk（process design kit，也有fab称为foundry design kit），描述的是模拟版图层级的晶体管级的物理实现，例如源漏栅尺寸、金属层之类的。这是在模拟版图阶段或者数字后端最后阶段会用到的。
-往上一个层级是IP（这边暂时称为IP），里面包含了标准单元、IO、sram compiler，这里面描述的层级就到了标准件层级，例如反相器、触发器等等。
+往上一个层级是IP，里面包含了标准单元、IO、sram compiler，这里面描述的层级就到了标准件层级，例如反相器、触发器等等。
 
 ## 字母数字组合的意义
 
