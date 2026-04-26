@@ -1,37 +1,5 @@
 # PDK及IP相关知识
 
-## 目录结构（SMIC28HKD）
-
-SMIC28HKD路径在
-
-```text
-/work/home/wumeng/SMIC22_INSTALL/SMIC28HKD_22ULP
-```
-
-目录结构如下：
-
-```text
-IP
-    IO  
-    STD  
-    Sram Complier
-SMIC_CalDRC_28HKD_091825_V1.0_REV2_0_offline241017 # 与设计规则检查（DRC）相关的文件
-    1P6M_4Ic_1TMc_1MTTc_ALPA2_offline241017.drc
-    ...(*.drc)
-SPDK28HKD_0918_OA_CDS_V1.0_REV0_0 # PDK
-    smic28HKD_0918_1P8M_6Ic_1TMc_1MTTc_ALPA2_oa_cds_2023_12_15_v1.0_rev0_0
-    smic28HKD_0918_1P9M_7Ic_1TMc_1MTTc_ALPA2_oa_cds_2023_12_15_v1.0_rev0_0
-TD-LO28-DR-2020_V2 # design rules，里面都是一些gds文件，还有一个详细的说明文档
-TD-LO28-DT-2080_V0 
-TD-LO28-KA-2129_V0
-TD-LO28-LC-2023_V0
-TD-LO28-PE-2004_V0
-TD-LO28-PE-2005_V0
-TD-LO28-SP-2016_V0 # spice model
-TD-LO28-TF-2011_V2 # technology file(.tf), layer map(.map), display file(.drf) for Virtuoso
-TD-LO28-XC-2066-V1 # calibre XRC 使用说明
-```
-
 ## 目录结构（TSMC22ULL）
 
 TSMC22ULL路径在
