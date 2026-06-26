@@ -62,21 +62,28 @@ DCO ring产生的时钟又可以与外部时钟（EXT_CLK）二选一输出，�
 
 ### design compiler综合脚本
 
-具体文件在`/work/home/rhxu/DCO_smic/DCO_syn/scripts/script.tcl`
+具体文件在/data/home/rh_xu30/Work/DCO_2026/syn/scripts/script.tcl
 
 ```tcl
-set search_path "/work/home/wumeng/SMIC22_INSTALL/SMIC28HKD_22ULP/IP/STD/SCC28NHKD_HDC30P140_RVT_V0p1a/liberty/0.9v" ;# TODO
-set target_library "scc28nhkd_hdc30p140_rvt_ss_v0p9_25c_ccs_lvf.db" ;# TODO
+cd /data/home/rh_xu30/temp/DCO/syn/build ;#TODO
+set search_path "/data/data_dell/PDK_Tech/TSMC_22NM_RF_ULL/IP/Std_Cell/tcbn22ullbwp7t40p140hvt_110b/digital/Front_End/timing_power_noise/CCS/tcbn22ullbwp7t40p140hvt_110b" ;#TODO
+set target_library "tcbn22ullbwp7t40p140hvttt0p8v25c_ccs.db" ;#TODO
 set link_library "* $target_library"
 
-analyze -f sverilog "DCO.v" ;# TODO
+
+analyze -f sverilog "/data/home/rh_xu30/temp/DCO/src/DCO.v" ;#TODO
 elaborate "DCO"
 current_design "DCO"
 link
 set_dont_touch "DCO"
 uniquify
-write_sdf "DCO.sdf" ;# TODO
+write_sdf "../DCO_tt_0p80v_25c.sdf"
+write -f verilog -hier -output ../DCO_postsyn.v
+write_sdc ../DCO.sdc
+write -f ddc -hier -output ../DCO.ddc
 ```
+
+由于该DCO源码本身就是门级描述风格，通常使用反相器形成的buffer显式造成延迟，从而形成振荡，因此综合过程中必须保留所有源码中例化的标准单元（例如不能让综合工具自动把两个反相器组成的buffer优化掉变成单纯连线）。这主要通过设置set_dont_touch指令实现。因此这边根本不需要使用复杂的综合脚本。我们综合只不过是为了将其中的单元uniquify并且得到sdf文件用于反标。
 
 ## 仿真（反标时序）
 
@@ -139,3 +146,61 @@ end
 |111111|111111|11|100.040MHz|
 
 其他测试点通过表格展示。可以发现频率确实随着粗调信号cc_sel的增大而减小。此外，fc_sel的调节在该仿真中没有起作用，可能是网络和标准单元的延时在该仿真中不够准确，导致无法仿出来它的影响。
+
+## 后端
+
+具体文件在/data/home/rh_xu30/Work/DCO_2026/pnr/。此次后端跳过了cts。
+需要注意的是，需要合理预估所需的面积，防止太小了造成拥挤；要再次对dco内部的所有单元设置保护，不能让工具为了时序将其优化掉，因为只有延迟才可以起振。
+
+```tcl
+set _dco_core [get_cells DCO_CORE -quiet]
+if {[sizeof_collection $_dco_core] == 0} {
+    set _dco_core [get_cells -hier *DCO_CORE -quiet]
+}
+if {[sizeof_collection $_dco_core] > 0} {
+    set_dont_touch $_dco_core true
+    puts "INFO: set_dont_touch on DCO_CORE before placement optimization"
+} else {
+    puts "WARN: DCO_CORE not found; ring protection not applied"
+}
+
+# Keep manual output buffer chains stable through placement as well.
+foreach _buf_chain {bufdclk bufdivclk} {
+    set _cells [get_cells $_buf_chain -quiet]
+    if {[sizeof_collection $_cells] > 0} {
+        set_dont_touch $_cells true
+        puts "INFO: set_dont_touch on $_buf_chain before placement optimization"
+    }
+}
+```
+
+## 仿真（pr后反标）
+
+为了进一步验证pr后dco能够正常工作，利用pr后的sdf文件再做一次反标仿真。需要注意的是，在tb文件中调用sdf，使用(mtm_spec)的是TYPICAL view，此时需要去检查该sdf中，是否有TYPICAL的数据。
+
+```text
+  (CELL
+    (CELLTYPE  "INVD1BWP7T40P140HVT")
+    (INSTANCE  DCO_CORE/buf4_0/buf1/buf1)
+      (DELAY
+        (ABSOLUTE
+        (IOPATH I ZN  (0.030:0.030:0.030) (0.032:0.032:0.032))
+        )
+      )
+  )
+  # (0.030:0.030:0.030)代表（MINIMUM:TYPICAL:MAXIMUM）,可以使用
+  
+    (CELL
+    (CELLTYPE  "INVD1BWP7T40P140HVT")
+    (INSTANCE  DCO_CORE/buf4_0/buf1/buf1)
+      (DELAY
+        (ABSOLUTE
+        (IOPATH I ZN  (0.030::0.030) (0.032::0.032))
+        )
+      )
+  )
+  # (0.030::0.030)代表TYPICAL view缺失，此时如果在反标设置里使用TYPICAL view，将自动设为0
+  # 而导致没有正确延迟，无法仿真起振，从而造成仿真停滞。
+  # 为此，要么反标不使用TYPICAL而使用MINIMUM/MAXIMUM，要么检查innovus导出sdf的指令是否有误
+```
+

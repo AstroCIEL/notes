@@ -6,6 +6,8 @@ DRC是检查版图是否符合物理制造的规则，antenna（天线效应） 
 
 如果virtuoso界面没有calibre选项卡，参见[virtuoso](./virtuoso.md/##在virtuoso显示calibre选项卡)
 
+如果innovus界面没有calibre选项卡，在innovus终端执行命令`source /home/EDAtools/mentor/Calibre2023/aoj_cal_2023.2_16.9/lib/cal_enc.tcl`。
+
 ### 说明文档
 
 T1CentOS/T2CentOS服务器上，在工艺库安装路径`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/Doc/CL-DR/TN22CLDR001_1_5.pdf`。在DRC debug的时候对任何violation有问题应该在该文档中查找说明以及图例。
