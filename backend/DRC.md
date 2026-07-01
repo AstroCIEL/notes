@@ -232,6 +232,10 @@ LAYOUT CLONE ROTATED PLACEMENTS YES  // For DFM PROPERTY
 
 ### 某些DRC违例的解决方法
 
+> 在没有加dummy前，DRC违例中的"\*.DN.\*"问题都不用管
+
+> 建议在加dummy前就进行一次drc检查来清掉该过程中可能引入的drc错误，因为如果在加dummy后再检查出来这样的错误然后改版图，就需要再重新加一次dummy。
+
 #### NW.S.2
 
 ```text
@@ -246,6 +250,10 @@ NW.S.2 { @ Space of 2 NW1V with different potentials >= 0.8
 类似于[IC训练营项目典型Calibre DRC案例](https://zhuanlan.zhihu.com/p/567673036)中分析的原因，DRC报错直接原因是检测到不同voltage的NW间距小于0.8，但是按理说std cell就是这么摆的，摆完就是这个间距。因此可以推断DRC将两条VDD rail识别成了不同的电压。为什么会识别成不同的电压，进一步观察我们可以发现这一块区域的VDD power rail没有跟任何power stripe或者power ring接上，因此工具无法识别他们的电压（是否一致）。由此发现pr过程的问题，由于这一块区域是core区域右侧，sram和power ring的小缝隙，这一部分没有打到任何纵向的stripe，导致VDD rail没有可以接上的纵向stripe，因此悬空。需要重新做一次pr
 
 ![alt text](images/image-78.png)
+
+还有一种情况是电源连通性并没有问题，即M1电源轨确实和Stripe正确连接，但是问题仅出现在最上面或者最下面的电源轨上并且是Endcap那一行，这是因为如果最上面/最下面的电源轨是VDD并且这一排是Endcap的话，Endcap的NW部分在VDD轨上但是并没有和M1相连，因此NW实际上是没有VDD电压的。此时的解决方法是在floorplan前就要设置`Floorplan -flip s`或者在gui中floorplan--specifyfloorplan--advanced--bottom row orient选项中选择另一个即R0，这样可以让第一条电源轨从VSS开始。为了让最上方的电源轨也从VSS结束，需要合理设置core的高度，使其为track高度即0.7的偶数倍。
+
+![alt text](images/image-104.png)
 
 #### SR.R.1, SLR.EN.1, CSR.EN.x
 
@@ -265,6 +273,20 @@ NW.S.2 { @ Space of 2 NW1V with different potentials >= 0.8
 
 ![alt text](images/image-81.png)
 
-并且建议在加dummy前就进行一次drc检查来清掉该过程中可能引入的drc错误，因为如果在加dummy后再检查出来这样的错误然后改版图，就需要再重新加一次dummy。
+![alt text](images/image-105.png)
 
-> 再没有加dummy前，DRC违例中的"\*.DN.\*"问题都不用管
+这边是绕线产生的M2与std cell内部的M2金属块间距过窄。如果遇到简单移动没有办法解决，可以将产生问题的金属块删掉，并且在相应位置打上routeblk（快捷键Shift+B，若要设置默认blk金属层，可在命令行用`setRouteBlkDefaultLayer -layer`指令设置）。然后再跑一遍`ecoRoute`。
+
+#### VIAx.EN.11
+
+![alt text](images/image-102.png)
+
+这是因为VIA2与上方M2金属条之间的间距过小。这种情况往往出现在C型结构中，C的上/下缘VIA与下/上缘的金属条间距过窄导致。此时可以移动附近的金属条（选中金属条然后按M），将金属条移动位置，消除C型结构。
+
+![alt text](images/image-103.png)
+
+#### EFP.M2.S.1
+
+![alt text](images/image-106.png)
+
+出现在形似`∃|E`的结构中。可以看到两个C型结构其实是标准单元中自带的金属块（为了在innovus中看到标准单元内部的金属，可以勾选右侧可视列表的Cell那一个系列），而中间横着那条是M2绕线。解决方法是破坏这个结构，直接将中间横着的这一条线删掉，然后在两个C型结构中间打上M2 routeblk，然后再`ecoRoute`即可。
