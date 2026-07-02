@@ -294,3 +294,9 @@ NW.S.2 { @ Space of 2 NW1V with different potentials >= 0.8
 ![alt text](images/image-106.png)
 
 出现在形似`∃|E`的结构中。可以看到两个C型结构其实是标准单元中自带的金属块（为了在innovus中看到标准单元内部的金属，可以勾选右侧可视列表的Cell那一个系列），而中间横着那条是M2绕线。解决方法是破坏这个结构，直接将中间横着的这一条线删掉，然后在两个C型结构中间打上M2 routeblk，然后再`ecoRoute`即可。
+
+#### M2.A.2
+
+违例的金属块M2的面积过小。直接把那一块金属删掉，然后重新ecoRoute
+
+![alt text](images/image-107.png)
