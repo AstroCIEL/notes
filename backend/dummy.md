@@ -53,9 +53,16 @@ T1CentOS/T2CentOS服务器上，在工艺库安装路径`/DISK2/Tech_PDK/TSMC_22
 
 ## 2. 运行Dummy_FEOL_Calibre_22nm_001.13a
 
-按照文件中的说明更改开头设置部分
+按照文件中的说明更改开头设置部分。注意点：
+- Precision需要和innovus中导出的unit选项一致。如果一个是2000一个是1000，会报错
+- UseprBoundary：理论上建议uncomment这个。但是实操中发现uncomment后生成的dummy为空，即使确认了原gds中prBoundary层存在且正确。因此注释掉
+- ChipWindowUsed：建议注释掉。只有当其uncomment的时候，下面的四个坐标才会生效。
+- 如果UseprBoundary和ChipWindowUsed都被注释掉，calibredrv将会将所有有内容的地方做一个并集来作为边界。实操中这种情况生成的dummy没问题
+- 如果带sealring就uncomment WithSealring，如果是子模块，uncomment dmOnCorner。
+- DEFINE TOP_M9是定义的tech的顶层，与当前模块的最高层无关
+- 其他选项一个个确认过去，基本不太用改，但是都得看一下
 
-```bash
+```c
 /* SWITCH DEFINITION START */
 
 //   ENVIRONMENT SETUP
@@ -66,9 +73,9 @@ RESOLUTION      5                               // tool resolution
 LAYOUT SYSTEM GDSII
 LAYOUT PATH "processor_iotop_wo_dmy_w_sr.gds"   // GDS file name
 LAYOUT PRIMARY "processor_iotop_w_SR"           // top cell name
-DRC RESULTS DATABASE "DODPO.gds" GDSII          // Output topcell name is the same as the original layout,
+//DRC RESULTS DATABASE "DODPO.gds" GDSII          // Output topcell name is the same as the original layout,
                                                 // please do not stream-in to the library of original design.
-//DRC RESULTS DATABASE "DODPO.gds" GDSII _DODPO // Output topcell name will be suffixed by _DODPO
+DRC RESULTS DATABASE "DODPO.gds" GDSII _DODPO // Output topcell name will be suffixed by _DODPO
 DRC SUMMARY REPORT "DODPO.sum"
 DRC MAXIMUM RESULTS ALL
 DRC KEEP EMPTY NO
@@ -99,7 +106,7 @@ VARIABLE PRE_FIX "TSMC"     // output cell name prefix when using AUTOREF output
 #DEFINE FILL_DOD_DPO        // insert Standard cell-like patterns / DOD / DPO / PP
 #DEFINE InsideINDDMY_HD_MD  // insert DOD/DPO inside INDDMY_HD/INDDMY_MD
 
-#DEFINE COMBINE_DODPO_DMVIA // combine dummy OD/PO and dummy Metal/Via utilities
+//#DEFINE COMBINE_DODPO_DMVIA // combine dummy OD/PO and dummy Metal/Via utilities
 //#DEFINE TOP_M5                      // Connect TOP metal M5 to AP
 //#DEFINE TOP_M6                      // Connect TOP metal M6 to AP
 //#DEFINE TOP_M7                      // Connect TOP metal M7 to AP
@@ -121,13 +128,13 @@ VARIABLE PRE_FIX "TSMC"     // output cell name prefix when using AUTOREF output
 calibre -hyper -turbo -hier -drc Dummy_FEOL_Calibre_22nm_001.13a |tee run.log
 ```
 
-就会生成一个名为DODPO.gds（按照脚本里自己定义的输出文件名）的版图文件。这个版图文件的顶层cell名跟原输入gds的top cell名称一样，但是它只包含了FEOL的dummy部分，并不没有包含原gds的信息。
+就会生成一个名为DODPO.gds（按照脚本里自己定义的输出文件名）的版图文件。这个版图文件的顶层cell名相比原输入gds的top cell名称多了一个DODPO的后缀，但是它只包含了FEOL的dummy部分，并不没有包含原gds的信息。
 
 ### 3. 运行Dummy_BEOL_Calibre_22nm_001.13a
 
-同理，修改后端dummy脚本的文件头。
+同理，修改后端dummy脚本的文件头。后段使用UseprBoundary是可以成功打上dummy的。
 
-```bash
+```c
 /* SWITCH DEFINITION START */
 #IFNDEF COMBINE_DODPO_DMVIA
 
@@ -285,7 +292,7 @@ VARIABLE PRE_FIX "TSMC"     // output cell name prefix when using AUTOREF output
 
 //#DEFINE FILL_DM10          // turn on to fill dummy M10.
  //#DEFINE VERTICAL_DM10     // turn on/off to fill vertical/horizontal dummy M10 and OPC dummy M10
- #DEFINE FILL_indDM10        // turn on to fill dummy M10 in INDDMY_MD/INDDMY_HD region
+ //#DEFINE FILL_indDM10        // turn on to fill dummy M10 in INDDMY_MD/INDDMY_HD region
  //#DEFINE 2K_THICK_My_M10      // turn on to design DM10/OPC_DM10 as 2K thick dummy metal, DM(y)/DM_O(y)
  //#DEFINE 2_6K_THICK_Mxy_M10    // turn on to design DM10 as 2.6K thick dummy metal, DM(xy)
  //#DEFINE 5K_THICK_Myz_M10      // turn on to design DM10 as 5K thick dummy metal, DM(yz)
@@ -294,8 +301,8 @@ VARIABLE PRE_FIX "TSMC"     // output cell name prefix when using AUTOREF output
  //#DEFINE 34K_THICK_Mu_M10     // turn on to design DM10 as 34K thick dummy metal, DM(u)
 
 //#DEFINE FILL_DM11          // turn on to fill dummy M11.
- #DEFINE VERTICAL_DM11       // turn on/off to fill vertical/horizontal dummy M11 and OPC dummy M11
- #DEFINE FILL_indDM11        // turn on to fill dummy M11 in INDDMY_MD/INDDMY_HD region
+ //#DEFINE VERTICAL_DM11       // turn on/off to fill vertical/horizontal dummy M11 and OPC dummy M11
+ //#DEFINE FILL_indDM11        // turn on to fill dummy M11 in INDDMY_MD/INDDMY_HD region
  //#DEFINE 2K_THICK_My_M11      // turn on to design DM11/OPC_DM11 as 2K thick dummy metal, DM(y)/DM_O(y)
  //#DEFINE 2_6K_THICK_Mxy_M11    // turn on to design DM11 as 2.6K thick dummy metal, DM(xy)
  //#DEFINE 5K_THICK_Myz_M11      // turn on to design DM11 as 5K thick dummy metal, DM(yz)
@@ -305,7 +312,7 @@ VARIABLE PRE_FIX "TSMC"     // output cell name prefix when using AUTOREF output
 
 //#DEFINE FILL_DM12          // turn on to fill dummy M12.
  //#DEFINE VERTICAL_DM12     // turn on/off to fill vertical/horizontal dummy M12 and OPC dummy M12
- #DEFINE FILL_indDM12        // turn on to fill dummy M12 in INDDMY_MD/INDDMY_HD region
+ //#DEFINE FILL_indDM12        // turn on to fill dummy M12 in INDDMY_MD/INDDMY_HD region
  //#DEFINE 2K_THICK_My_M12      // turn on to design DM12/OPC_DM12 as 2K thick dummy metal, DM(y)/DM_O(y)
  //#DEFINE 2_6K_THICK_Mxy_M12    // turn on to design DM12 as 2.6K thick dummy metal, DM(xy)
  //#DEFINE 5K_THICK_Myz_M12      // turn on to design DM12 as 5K thick dummy metal, DM(yz)
@@ -314,8 +321,8 @@ VARIABLE PRE_FIX "TSMC"     // output cell name prefix when using AUTOREF output
  //#DEFINE 34K_THICK_Mu_M12     // turn on to design DM12 as 34K thick dummy metal, DM(u)
 
 //#DEFINE FILL_DM13          // turn on to fill dummy M13.
- #DEFINE VERTICAL_DM13       // turn on/off to fill vertical/horizontal dummy M13 and OPC dummy M13
- #DEFINE FILL_indDM13        // turn on to fill dummy M13 in INDDMY_MD/INDDMY_HD region
+ //#DEFINE VERTICAL_DM13       // turn on/off to fill vertical/horizontal dummy M13 and OPC dummy M13
+ //#DEFINE FILL_indDM13        // turn on to fill dummy M13 in INDDMY_MD/INDDMY_HD region
  //#DEFINE 2K_THICK_My_M13      // turn on to design DM13/OPC_DM13 as 2K thick dummy metal, DM(y)/DM_O(y)
  //#DEFINE 2_6K_THICK_Mxy_M13    // turn on to design DM13 as 2.6K thick dummy metal, DM(xy)
  //#DEFINE 5K_THICK_Myz_M13      // turn on to design DM13 as 5K thick dummy metal, DM(yz)
@@ -337,22 +344,51 @@ VARIABLE PRE_FIX "TSMC"     // output cell name prefix when using AUTOREF output
 calibre -hyper -turbo -hier -drc Dummy_BEOL_Calibre_22nm_001.13a |tee run.log
 ```
 
-就会生成一个名为DM.gds（按照脚本里自己定义的输出文件名）的版图文件。这个版图文件的顶层cell名跟原输入gds的top cell名称一样，但是它只包含了BEOL的dummy部分，并不没有包含原gds的信息。
+就会生成一个名为DM.gds（按照脚本里自己定义的输出文件名）的版图文件。这个版图文件的顶层cell名相比原输入gds的top cell名称多了一个DM的后缀，但是它只包含了BEOL的dummy部分，并不没有包含原gds的信息。
 
 ### 4. merge原gds和两个dummy gds
 
 现在需要将原gds和FEOL dummy gds和BEOL dummy gds合并。在终端运行
 
 ```bash
-#calibredrv -a layout filemerge -in file1.gds -in file2.gds -rename -createtop new_top_cell_name -out out.gds
-calibredrv -a layout filemerge -in processor_iotop_wo_dmy_w_sr.gds -in DM.gds -in DODPO.gds -rename -createtop processor_iotop_w_dmy_sr -out processor_iotop_w_dmy_sr.gds
+calibredrv merge_gds.tcl
 ```
 
-即可生成processor_iotop_w_dmy_sr.gds的最终版图文件。导入到virtuoso观察
+其中，merge_gds.tcl为
 
-![alt text](images/image-70.png)
+```tcl
+# change starts
+set topGDS ../../backup/signoff/axu_top_postSignoff.gds2
+set mergeGDSs {\
+	axu_top_DM.gds
+	axu_top_DODPO.gds
+}
+# change ends
 
-可以发现在原gds（顶层cell为processor_iotop_w_SR）基础上，多了processor_iotop_w_SR_WB2和processor_iotop_w_SR_DM两个cell。这三者merge起来就是加了dummy的顶层了。
+###################################
+# Load topGDS and get topname.
+set layoutTOP [layout create $topGDS -dt_expand -preserveProperties -preserveTextAttributes]
+set layoutTOP_topname [$layoutTOP topcell]
+
+# merge GDS and keep hierarchy.
+foreach mergeGDS $mergeGDSs {
+	set layoutMergeCell [layout create $mergeGDS -dt_expand -preserveProperties -preserveTextAttributes]
+	set layoutMergeCell_topname [$layoutMergeCell topcell]
+	if {[$layoutTOP exists cell $layoutMergeCell_topname] == 1} {
+		puts "WARNING(USER) :$layoutMergeCell_topname already exists in $layoutTOP_topname, it will be appended soon."
+	} else {
+		puts "WARNING(USER) :$layoutMergeCell_topname does not exist in $layoutTOP_topname, it will be created soon."
+		$layoutTOP create cell $layoutMergeCell_topname $layoutMergeCell $layoutMergeCell_topname
+		$layoutTOP create ref $layoutTOP_topname $layoutMergeCell_topname 0 0 0 0 1
+	}
+	$layoutTOP import layout $mergeGDS FALSE append -dt_expand -preserveProperties -preserveTextAttributes
+}
+
+# Export merged layout.
+$layoutTOP gdsout $layoutTOP_topname\_merged_dummy.gds.gz
+```
+
+即可生成最终版图文件。用这样merge的方法，可以使得dummy的两个版图加入到原gds顶层cell的下面，而不是与原gds顶层cell平行合并成一个新的顶层（这样会丢失顶层的pin信息导致lvs过不了）。
 
 ![alt text](images/image-71.png)
 
@@ -369,7 +405,13 @@ calibre -hyper -turbo -hier -drc Dummy_BEOL_Calibre_22nm_001.13a |tee run.log # 
 
 #merge gds
 #calibredrv -a layout filemerge -in file1.gds -in file2.gds -rename -createtop new_top -out out.gds
-calibredrv -a layout filemerge -in <origin_gds>.gds -in DM.gds -in DODPO.gds -rename -createtop <new_top_cell_name> -out <final_gds>.gds
-```
+#calibredrv -a layout filemerge -in <origin_gds>.gds -in DM.gds -in DODPO.gds -rename -createtop <new_top_cell_name> -out <final_gds>.gds
+# 以上方法会产生一个新的top cell导致顶层pin信息丢失，不建议使用
+calibredrv merge_gds.tcl
 
-尖括号中的需要自行修改，并且和`Dummy_BEOL_Calibre_22nm_001.13a`,`Dummy_FEOL_Calibre_22nm_001.13a`。在终端运行run_Dummy脚本文件中做好对应。
+# DRC check
+calibre -64 -drc -hier -turbo 16 <drc_rule> | tee -i drc.log
+
+# LVS check
+calibre -lvs -64 -hier -hcell ../../../backup/signoff/hcell.list -turbo calibre.lvs | tee -i lvs.log
+```

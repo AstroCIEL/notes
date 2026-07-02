@@ -16,7 +16,7 @@ T1CentOS/T2CentOS服务器上，在工艺库安装路径`/DISK2/Tech_PDK/TSMC_22
 
 用于ant-DRC的规则文件则是同一个目录下的`CLN22ULP_9M_001_ANT.15a`文件。
 
-## 标准操作步骤
+## 标准操作步骤（GUI）
 
 0.  Prepare drc rule file, and **change the header** in it. Make sure the configurations are suited for your design(e.g. whether it is full_chip, whether it is with seal_ring, the boudary of the chip).
 
@@ -49,6 +49,10 @@ T1CentOS/T2CentOS服务器上，在工艺库安装路径`/DISK2/Tech_PDK/TSMC_22
 14.  Once you select a check/cell in the left column in RVE window, double-clicking or pressing the light button in the toolbar will highlight and zoom in on the error. Follow the description to resolve the error.
 
 It is important to note that even though there are a lot of errors, often one fix will solve many other problems.
+
+## 脚本操作步骤
+
+如果不使用GUI，可以直接用终端命令`calibre -64 -drc -hier -turbo 16 <drc_rule> | tee -i drc.log`。但是需要提前将drc规则文件中的gds路径指定好。
 
 ## 注意事项
 

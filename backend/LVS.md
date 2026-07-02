@@ -1,6 +1,8 @@
 # LVS
 
-LVS全称layout versus schematic，即版图与电路原理图的对比。在模拟流程（即使用virtuoso完成原理图设计和版图设计）中，需要比对一个cell的layout和schematic这两个view是否一致。对于数字流程（使用innovus数字后端生成版图并生成网表），则需要将生成的版图和网表（cdl）进行比对。本文主要是从数字流程的视角来举例。
+LVS全称layout versus schematic，即版图与电路原理图的对比。在模拟流程（即使用virtuoso完成原理图设计和版图设计）中，需要比对一个cell的layout和schematic这两个view是否一致。对于数字流程（使用innovus数字后端生成版图并生成网表），则需要将生成的版图和网表（cdl）进行比对。本文主要是从数字流程的视角来举例。跑LVS有两种方式，用脚本（推荐）是`calibre -lvs -64 -hier -hcell ../../../backup/signoff/hcell.list -turbo calibre.lvs | tee -i lvs.log`(首先需要去lvs规则文件中指定相关的路径)，还有一种方法是使用gui。尽量使用脚本来跑，并且使用默认的规则，这样是最保险的。
+
+以下是使用gui的方法。
 
 ## 说明文档
 
@@ -9,6 +11,8 @@ LVS全称layout versus schematic，即版图与电路原理图的对比。在模
 ```spice
 .INCLUDE "/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/PDK/PDK_20211230_LO_0.8V_2.5V_1P9M_6X1Z1U_UT_ALRDL_StarRC_QRC/Calibre/lvs/source.added"
 ```
+
+或者是在v2cdl的步骤中，将上述文件链接进去，这样就可以自动在生成的cdl上包含这个文件。
 
 ## 准备工作
 
