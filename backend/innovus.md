@@ -10,6 +10,17 @@ Innovus数字后端设计流程可以概括为以下步骤：
 6. **布线**：连接所有单元和引脚。
 7. **签核**：验证设计的正确性并生成GDSII。
 
+## **0. 准备工作**
+
+脚本模板见[innovus_flow](https://github.com/AstroCIEL/innovus_flow)。需要准备和修改以下文件：
+
+- 综合网表：将综合后的网表放在./src/netlist/下
+- 时序约束：将sdc文件（可以是综合生成的）放在./src/constraints/下
+- sram数据：将用到的sram和macro以其名字在src/下创建文件夹，并在改文件夹中存放对应的cdl,gds,lef,lib文件
+- 修改Makefile：将TOP变量的名称修改为顶层cell名
+- 修改innovus全局配置：./scripts/General/global_config.tcl中，修改相应选项例如顶层金属等。
+- 修改innovus初始化配置：./scripts/Step_Init/init_config.tcl中，修改工艺库ip路径，sram调用路径，pg名称。【重要】
+
 ## **1. 初始化设计（Design Initialization）**
 
 这是整个流程的第一步，目的是将综合后的网表和约束加载到Innovus中，并初始化设计环境。
@@ -58,7 +69,6 @@ create_analysis_view -name func_tt_typ    -constraint_mode mode_func -delay_corn
 # 6. 设置当前分析目标 ---
 # 告诉工具：用哪个视图查 Setup，哪个视图查 Hold
 set_analysis_view -setup func_tt_typ -hold func_tt_typ
-
 ```
 
 然后进行一些运行时的设置。要注意23版本的innovus在centos7上使用多线程时会出错。因此最好降级到22版本。
@@ -75,6 +85,7 @@ setDesignMode   -process            22 \
                 -powerEffort        low \
                 -bottomRoutingLayer M2 \
                 -topRoutingLayer    M7
+# 注意修改此处金属层
 
 # 为了在innovus上方工具栏中出现calibre用于后续直接在innovus中跑DRC图形界面
 source /home/EDAtools/mentor/Calibre2023/aoj_cal_2023.2_16.9/lib/cal_enc.tcl
@@ -97,7 +108,7 @@ floorPlan -flip s -s $core_sizex $core_sizey $core_margin $core_margin $core_mar
 - `-flip` 用s即second选项，使电源轨从VSS开始。具体见DRC章节中NW违例中的解释。默认是f即first，这将导致第一排endcap使用MX角度摆放引发NW与VDD断掉的情况。
 - `-s` 后面跟的数字是core的尺寸（die包括了core和margin），单位是微米。
 
-1. **摆放pin**：
+2. **摆放pin**：
 
 - 使用 `place_io` 自动摆放I/O引脚，或使用 `editPin` 手动调整。
 - 可以先在gui中添加，然后去cmd文件中将这个排布pin的指令复制一下，保存为tcl文件。之后就可以脱离gui直接使用脚本。
@@ -244,6 +255,8 @@ verify_drc -limit 99999                                -report ../report/postPow
 verifyConnectivity -net {VDD_AXU VSS_AXU} -error 99999 -report ../report/postPowerplan/verify_connectivity.rpt
 verify_PG_short -net {VDD_AXU VSS_AXU}                 -report ../report/postPowerplan/verify_pgshort.rpt
 ```
+
+这个阶段可以忽略的违例是M1 dangling wire。其他违例大部分情况下都需要清空。
 
 ---
 
@@ -584,9 +597,122 @@ extractRC
 rcOut -rc_corner rc_typ -spef ../backup/signoff/${TopName}_postSignoff_rc_typ.spef
 ```
 
-1. **加dummy**
+2. **形式验证**
+
+使用formality对pnr前后的网表进行形式验证，保证pnr过程没有对电路功能造成改变。该过程不需要svf指导文件（只在综合前后形式验证中需要）。示例脚本：
+
+```tcl
+#==============================================================================
+# 1. 环境与库设置（含 .db 文件设置，关键部分）
+#==============================================================================
+
+#--- 1.1 设置搜索路径：让工具能找到库文件、设计文件
+set search_path [list . \
+    /home/user/project/rtl \
+    /home/user/project/syn \
+    /home/user/project/lib/std_cell \
+    /home/user/project/lib/io \
+    /home/user/project/lib/mem \
+    /tools/synopsys/dc/libraries/dw ]
+
+#--- 1.2 设置 link_library：用于功能链接，第一项必须为 "*"
+#     通常包含标准单元库、IO库、Memory库、IP库以及DesignWare库
+set link_library [list * \
+    std_cell.db \
+    io_cell.db \
+    sram.db \
+    pll_ip.db \
+    dw_foundation.sldb ]
+
+#--- 1.3 设置 target_library：通常与标准单元库一致
+set target_library [list std_cell.db]
+
+#--- 1.4 读入工艺库（.db 文件）到实现端容器
+#     .db 文件包含标准单元的功能模型，网表中每个单元都需要有对应定义
+read_db -i { \
+    std_cell.db \
+    io_cell.db \
+    sram.db \
+    pll_ip.db }
+
+#==============================================================================
+# 2. 参考设计（Reference, RTL）设置
+#==============================================================================
+
+#--- 2.1 读入 RTL 文件（支持 SystemVerilog 使用 -sv 选项）
+read_verilog -sv -r [list \
+    ../rtl/top.v \
+    ../rtl/sub1.v \
+    ../rtl/sub2.v ]
+
+#--- 2.2 若 RTL 中使用 DesignWare IP，需设置 DW 根目录
+set hdlin_dwroot "/tools/synopsys/dc/2019.12"
+
+#--- 2.3 设置参考设计顶层
+set_top r:/WORK/top
+
+#--- 2.4 设置常量约束（例如扫描使能信号置 0，确保功能模式）
+set_constant r:/WORK/top/scan_en 0
+set_constant r:/WORK/top/scan_mode 0
+set_case_analysis r:/WORK/top/test_mode 0
+
+#==============================================================================
+# 3. 实现设计（Implementation, 门级网表）设置
+#==============================================================================
+
+#--- 3.1 读入综合后网表
+read_verilog -i ../syn/outputs/top_mapped.v
+
+#--- 3.2 设置实现设计顶层（与参考端顶层名一致）
+set_top i:/WORK/top
+
+#--- 3.3 同样设置实现端扫描信号约束
+set_constant i:/WORK/top/scan_en 0
+set_constant i:/WORK/top/scan_mode 0
+set_case_analysis i:/WORK/top/test_mode 0
+
+#==============================================================================
+# 4. 匹配与验证
+#==============================================================================
+
+#--- 4.1 执行关键点匹配（寄存器、端口等）
+match
+
+#--- 4.2 不允许任何失败点
+set verification_failing_point_limit 0
+
+#--- 4.3 执行形式验证
+verify
+
+#==============================================================================
+# 5. 报告生成与 Session 保存
+#==============================================================================
+
+#--- 5.1 创建报告目录
+if {![file exist ./reports/rtl2syn]} {
+    file mkdir ./reports/rtl2syn
+}
+
+#--- 5.2 输出各类报告
+report_passing_points  -to ./reports/rtl2syn/passing.rpt
+report_failing_points  -to ./reports/rtl2syn/failing.rpt
+report_aborted_points  -to ./reports/rtl2syn/aborted.rpt
+report_unmatched_points -to ./reports/rtl2syn/unmatched.rpt
+report_guidance        -to ./reports/rtl2syn/guidance.rpt
+
+#--- 5.3 保存 session 便于后续调试
+save_session fm_sess -replace
+
+exit
+```
+
+3. **加dummy**
 
 详见Dummy章节。加完dummy过一遍DRC和LVS。
+
+4. **primetime**
+
+工业界标准signoff必须使用primetime结合抽出的寄生参数进行最精确的时序验证。但是其debug门槛较高，我们可以先使用pt得到违例的值，然后回到innovus中，给uncertainty加上这个值，然后重新Route，也就是让innovus过修，从而保证余量。
 
 ---
 

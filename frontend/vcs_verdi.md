@@ -34,7 +34,7 @@ clean:
     ddr_addr.txt ddr_data.txt
 ```
 
-然后`make all`即可仿真并自动打开Verdi查看波形了。
+然后`make all`即可仿真并自动打开Verdi查看波形了。需要注意的是，`vcs`阶段只是在编译，`sim`阶段才是运行，`verdi`阶段是看波形。
 
 关于反标到案例，可以参考DCO篇。
 

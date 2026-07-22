@@ -52,7 +52,7 @@ It is important to note that even though there are a lot of errors, often one fi
 
 ## 脚本操作步骤
 
-如果不使用GUI，可以直接用终端命令`calibre -64 -drc -hier -turbo 16 <drc_rule> | tee -i drc.log`。但是需要提前将drc规则文件中的gds路径指定好。
+如果不使用GUI，可以直接用终端命令`calibre -64 -drc -hier -turbo 16 <drc_rule> | tee -i drc.log`。但是需要提前将drc规则文件中的gds路径指定好。运行结束后，可以观察total results的个数。如果要图形化界面具体去看drc结果的位置和版图，可以在打开的innovus/virtuoso/calibredrv中选择calibre->start RVE，然后选择run directory下的DRC_RES.db文件。
 
 ## 注意事项
 
@@ -300,3 +300,7 @@ NW.S.2 { @ Space of 2 NW1V with different potentials >= 0.8
 违例的金属块M2的面积过小。直接把那一块金属删掉，然后重新ecoRoute
 
 ![alt text](images/image-107.png)
+
+#### LUP.6
+
+如果是在子模块加dummy前出现这个问题并且大规模出现，一般情况下加完dummy就好了。

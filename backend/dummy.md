@@ -409,9 +409,10 @@ calibre -hyper -turbo -hier -drc Dummy_BEOL_Calibre_22nm_001.13a |tee run.log # 
 # 以上方法会产生一个新的top cell导致顶层pin信息丢失，不建议使用
 calibredrv merge_gds.tcl
 
+# 替换以下尖括号中的值
 # DRC check
-calibre -64 -drc -hier -turbo 16 <drc_rule> | tee -i drc.log
+calibre -64 -drc -hier -turbo 16 <calibre.drc> | tee -i drc.log
 
 # LVS check
-calibre -lvs -64 -hier -hcell ../../../backup/signoff/hcell.list -turbo calibre.lvs | tee -i lvs.log
+calibre -lvs -64 -hier -hcell <../../../backup/signoff/hcell.list> -turbo 16 <calibre.lvs> | tee -i lvs.log
 ```
