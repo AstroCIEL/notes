@@ -10,6 +10,8 @@ Innovus数字后端设计流程可以概括为以下步骤：
 6. **布线**：连接所有单元和引脚。
 7. **签核**：验证设计的正确性并生成GDSII。
 
+---
+
 ## **0. 准备工作**
 
 脚本模板见[innovus_flow](https://github.com/AstroCIEL/innovus_flow)。需要准备和修改以下文件：
@@ -20,6 +22,8 @@ Innovus数字后端设计流程可以概括为以下步骤：
 - 修改Makefile：将TOP变量的名称修改为顶层cell名
 - 修改innovus全局配置：./scripts/General/global_config.tcl中，修改相应选项例如顶层金属等。
 - 修改innovus初始化配置：./scripts/Step_Init/init_config.tcl中，修改工艺库ip路径，sram调用路径，pg名称。【重要】
+
+---
 
 ## **1. 初始化设计（Design Initialization）**
 
@@ -506,6 +510,7 @@ streamOut   -mapFile    ${streamOut_map} \
 ```
 
 导出一版gds然后用calibre跑DRC，详见DRC章节。建议在innovus的calibre选项下跑，这样跑完之后可以直接在innovus里面查看和修改。修改后`ecoRoute`然后重新导出gds并且再次跑DRC，保证DRC在calibre中clean（加dummy之前DN问题和LUP问题可以先不管，但是所有.S,.EN问题需要全部解掉）
+
 ---
 
 ## **7. 签核（Signoff）**
