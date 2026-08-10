@@ -22,7 +22,26 @@ LVS全称layout versus schematic，即版图与电路原理图的对比。在模
 
 3. 检查顶层模块端口是否齐全，应该包含所有信号、电源（包括VDD_IO或VDDPST）、地（包括VSS或VSSPST）
 
-4. 在网表部分，不应该包含任何纯物理单元的实例（比如PAD52D6GU，FILLER等），他们没有任何逻辑功能，工艺库也没有为他们提供spi描述，因此可能在lvs中被识别为未定义的子电路导致lvs无法进行。如果出现了这些实例，可以直接删掉。
+4. 在网表部分，不应该包含任何纯物理单元的实例（比如PAD52D6GU，FILLER等），他们没有任何逻辑功能，工艺库也没有为他们提供spi描述，因此可能在lvs中被识别为未定义的子电路导致lvs无法进行。如果出现了这些实例，可以直接删掉。这边给出了常见的网表导出时需要忽略的单元列表：
+
+```text
+set lvs_exclude_cells [ list \
+        TAPCELLBWP7T30P140         \
+        BOUNDARY_LEFTBWP7T30P140   \
+        BOUNDARY_RIGHTBWP7T30P140  \
+        FILL2BWP7T30P140           \
+        FILL3BWP7T30P140           \
+        FILL2BWP7T30P140HVT        \
+        FILL3BWP7T30P140HVT        \
+        PCORNER                    \
+        PFILLER20                  \
+        PFILLER10                  \
+        PFILLER5                   \
+        PFILLER1                   \
+        PFILLER05                  \
+        PFILLER0005                
+]
+```
 
 ![alt text](images/image-99.png)
 
@@ -34,7 +53,7 @@ LVS全称layout versus schematic，即版图与电路原理图的对比。在模
 
 ![alt text](images/image-98.png)
 
-> 为了从一开始导出cdl就连接完整，应该在数字后端poerplan的时候就完整设置globalNetConnect，不要忘记连AVDD和POC。容易忽略的是POC，因此可以在init_pwr_net时就加上POC，然后再`globalNetConnect POC -type pgpin -pin POC -all`
+> 为了从一开始导出cdl就连接完整，应该在数字后端floorplan的时候就完整设置globalNetConnect，不要忘记连AVDD和POC。容易忽略的是POC，因此可以在init_pwr_net时就加上POC，然后再`globalNetConnect POC -type pgpin -pin POC -all`.但是在LVS验证的时候，LVS选项中填写power端口的时候，不能写POC。
 
 6. 如果virtuoso界面左上角工具栏没有calibre选项卡，参见[virtuoso](./virtuoso.md/##在virtuoso显示calibre选项卡)
 
@@ -43,9 +62,9 @@ LVS全称layout versus schematic，即版图与电路原理图的对比。在模
 1. 打开需要做lvs的cell的版图，在上方菜单栏中选择 `Calibre -> Run nmLVS`。打开界面后会弹出窗口让你选择recent runset（如果是第一次使用则为空），你可以选择load其中一个runset，也可以不选，重新开始配置。
 2. `Rules`选项卡中LVS Rule File选择工艺库中提供的lvs规则文件，例如`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/PDK/PDK_20211230_LO_0.8V_2.5V_1P9M_6X1Z1U_UT_ALRDL_StarRC_QRC/Calibre/lvs/calibre.lvs`。lvs规则文件不像drc文件那样需要修改文件头中的各种配置。
 3. `Rules`选项卡中Run Directory请选择一个专门的文件夹，因为lvs会在该目录下生成很多文件。建议是新建一个文件夹。
-4. `Inputs`选项卡中，`Run`可以选择hierarchical和flat，这是两种不同的验证方式，但是原则上来讲，两种验证方法对于 LVS 正确性没有影响。`Step`选择默认的layout vs netlist
+4. `Inputs`选项卡中，`Run`可以选择hierarchical和flat，这是两种不同的验证方式，但是原则上来讲，两种验证方法对于 LVS 正确性没有影响。建议选择hier加快检查速度。`Step`选择默认的layout vs netlist
 
-> 层次化(hierarchical)验证保留了设计的层次结构，每个模块在验证过程中都作为一个独立的单元进行检查。层次化验证速度更快，可以减少相同子模块的重复验证计算。扁平化(flat)验证将设计的所有模块展开为一个平面结构，即所有模块的内部细节都被展开并作为一个整体进行检查。检查会更加全民啊，但是速度较慢、内存占用更高。
+> 层次化(hierarchical)验证保留了设计的层次结构，每个模块在验证过程中都作为一个独立的单元进行检查。层次化验证速度更快，可以减少相同子模块的重复验证计算。扁平化(flat)验证将设计的所有模块展开为一个平面结构，即所有模块的内部细节都被展开并作为一个整体进行检查。检查会更加全面，但是速度较慢、内存占用更高。
 
 5. `Inputs`选项卡中`layout`相关的部分已经自动填充好，检查是否正确即可（如果就是在要检查lvs的cell的版图下打开的话一般就没问题）。在calibre2023版本（2021的版本中似乎没有这个选项所以不用管）的界面中会出现让你勾选`export from layout viewer"的选项，这个可以不选。如果勾选的话，下面的layout netlist文件是根据layout会自己生成的文件，并不需要提前准备一个已经存在的文件供读取。
 
@@ -55,7 +74,7 @@ LVS全称layout versus schematic，即版图与电路原理图的对比。在模
 
 ![alt text](images/image-92.png)
 
-7. `Options`选项卡中，supply部分需要填写所有的pg端口名称
+7. `Options`选项卡中，supply部分需要填写所有的pg端口名称。注意power net中不要写POC相关端口。
 
 ![alt text](images/image-93.png)
 
@@ -64,6 +83,8 @@ LVS全称layout versus schematic，即版图与电路原理图的对比。在模
 8. `Options`选项卡中在 `Connect` 中勾选 Connect nets with colon，以及 Don't connect nets by name，如下所示
 
 ![alt text](images/image-94.png)
+
+> 在LVS规则文件中，写了Connect nets with colon默认开启，而对于full chip检查，建议关闭。如果此处是选择了关闭，则innovus那边导出gds之前需要设置`setStreamOutMode -virtualConnection false`。总之导出端和LVS验证端需要保持一致。虚拟连接的意思就是同名网络视为连接，在innovus导出gds的时候如果虚拟连接是开启的（默认），则同名网络会在名称后面加一个冒号（colon），提示LVS工具加冒号的网络视为连接。因此如果innovus那边导出的gds中信号后带冒号，而LVS检查时不识别冒号，他就会把这个冒号看作一个没有特殊含义的字符，例如`VDD:`,从而与网表中的`VDD`不相同，出现报错。
 
 9. `Options`选项卡中在`(gate->)filter unused options`勾选Q选项，即 `MOS, bipolar, resistor, capacitor, and diode devices with no general paths to any non-power/ground pads`.
 
@@ -89,4 +110,3 @@ LVS全称layout versus schematic，即版图与电路原理图的对比。在模
 
 ![alt text](images/image-101.png)
 
-## LVS Debug

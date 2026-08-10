@@ -33,13 +33,15 @@ Innovus数字后端设计流程可以概括为以下步骤：
 set TopName $env(TOP)
 set MMMCFile "../scripts/Step0_Init/mmmc.tcl"
 
-# 以下set_init_*都是系统保留变量，而非自定义变量
+# 以下init_*都是系统保留变量，而非自定义变量
 set init_lef_file ${LefFile}
 set init_verilog "${ROOT}/src/netlist/${TopName}_postsyn.v"
 set init_top_cell ${TopName}
 set init_mmmc_file ${MMMCFile}
 set init_pwr_net {VDD_AXU}
 set init_gnd_net {VSS_AXU}
+
+# 对于顶层，POC也需要加在init_pwr_net中。但是他并不是顶层的端口。
 ```
 
 其中，需要指定`mmmc.tcl`
@@ -542,6 +544,8 @@ write_lef_abstract  -5.8 \
                     -specifyTopLayer    M7 \
                     -stripePin \
                     ../backup/signoff/${TopName}_postSignoff.lef
+# toplayer是用到的最高那一层
+# pgpinlayer是所有power stripe/ring用到的所有金属层
 
 # SDF
 write_sdf   -min_view func_tt_typ \
@@ -549,6 +553,7 @@ write_sdf   -min_view func_tt_typ \
             -max_view func_tt_typ \
             -recompute_delay_calc \
             ../backup/signoff/${TopName}_postSignoff_func_tt_typ.sdf
+# 需要指定typ_view，否则sdf中typ_view为空，可能对反标仿真造成问题
 
 # lib
 do_extract_model    -view func_tt_typ \
@@ -568,23 +573,26 @@ streamOut   -mapFile    ${streamOut_map} \
             -mode       ALL \
             -unit       1000 \
             ../backup/signoff/${TopName}_postSignoff.gds2
+# 对于full chip，建议在导出gds前设置setStreamOutMode -virtualConnection false，并且在LVS的时候关闭virtual connect colon
 
 
-
-# v，需要把filler，boundary，tap cell去除。decap不能去除
-set lvs_exclude_cells xxx
+# v
+# set lvs_exclude_cells xxx可以在此处指定，也可以在之前的脚本如init_config中指定
+# v中需要把filler，boundary，tap cell去除。decap不能去除。也就是说lvs_exclude_cells中需要包含filler，boundary，tap cell
 saveNetlist -excludeCellInst    ${lvs_exclude_cells} \
             -excludeLeafCell \
             -flat \
             -phys \
             ../backup/signoff/${TopName}_flat_postSignoff.v
+# 加了phys就会把VDD/VSS等电源端口也体现在网表中
 
 saveNetlist -excludeCellInst    ${lvs_exclude_cells} \
             -excludeLeafCell \
             -topModuleFirst \
             ../backup/signoff/${TopName}_hier_postSignoff.v
 
-# v转cdl。v2lvs option是链接的cdl文件，包括std cell，sram等的cdl
+# v转cdl。
+# v2lvs option是链接的cdl文件，包括std cell，sram等的cdl。可以在此处设置也可以在之前的脚本如init_config中设置
 set v2lvs_option xxx
 set cur_dir [pwd]
 echo "v2lvs   ${v2lvs_option} \
@@ -596,8 +604,9 @@ exec ../scripts/Step6_SIgnoff/v2lvs_run.csh
 # spef
 setExtractRCMode \
   -engine postRoute \
-  -effortLevel signoff \
+  -effortLevel high \
   -coupled true 
+# 此处effort选择high而不是signoff。选择signoff反而不准
 extractRC
 rcOut -rc_corner rc_typ -spef ../backup/signoff/${TopName}_postSignoff_rc_typ.spef
 ```

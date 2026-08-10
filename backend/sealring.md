@@ -44,7 +44,7 @@ seal ring外面有划封线，这个是用来分裂芯片的，为避免造成�
 
 ### 模板导入
 
-TSMC22提供了SEAL RING的sample，路径在`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/Doc/`，有三个gds文件，分别对应使用了不同顶层金属的情况：
+TSMC22提供了SEAL RING的sample，路径在`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/Doc/CL-DR/`，有三个gds文件，分别对应使用了不同顶层金属的情况：
 
 ![alt text](images/image-43.png)
 
@@ -73,6 +73,6 @@ TSMC22提供了SEAL RING的sample，路径在`/DISK2/Tech_PDK/TSMC_22NM_RF_ULL/D
 
 ![alt text](images/image-47.png)
 
-完成后,再新建一个cell,将iotop和seal ring放在一起即可
+完成后,再新建一个cell,将iotop和seal ring调用实例化并放在一起即可
 
 ![alt text](images/image-48.png)

@@ -90,3 +90,6 @@ set L [ layout create $gdsfile -dt_expand -preservePaths -preserveTextAttributes
 
 #### 5. Run DRC并在RVE中查看结果
 
+## 查看DRC/LVS结果
+
+选项卡中选择Run RVE，并且加载对应的结果文件，即可查看之前已经跑出来的DRC和LVS结果。
